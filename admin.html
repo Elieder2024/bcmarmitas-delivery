@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   
-  <link rel="stylesheet" href="styles.css?v=1.3" />
+  <link rel="stylesheet" href="styles.css?v=1.4" />
   <style>
     body {
       background: #0f172a;
@@ -23,7 +23,7 @@
     }
     .admin-full-container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1050px;
       background: #ffffff;
       border-radius: var(--radius-lg);
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
@@ -45,6 +45,35 @@
       align-items: center;
       gap: 0.6rem;
     }
+    .price-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .price-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .price-card h4 {
+      font-size: 1.1rem;
+      color: var(--color-dark);
+      margin-bottom: 0.5rem;
+    }
+    .price-card input {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #dc2626;
+      text-align: center;
+      width: 100%;
+      padding: 0.5rem;
+      border: 2px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.75rem;
+    }
   </style>
 </head>
 <body>
@@ -54,7 +83,7 @@
     
     <!-- HEADER DA COZINHA DO DONO -->
     <header class="admin-top-bar">
-      <h1><i class="fa-solid fa-kitchen-set"></i> PAINEL DA COZINHA - BC MARMITAS</h1>
+      <h1><i class="fa-solid fa-kitchen-set"></i> PAINEL DO DONO - BC MARMITAS</h1>
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <span style="font-size: 0.82rem; background: rgba(255,255,255,0.2); padding: 0.35rem 0.75rem; border-radius: 20px;" id="owner-logged-text">Dono: dono@bcmarmitas.com.br</span>
         <button class="btn btn-secondary btn-sm" onclick="handleOwnerLogoutPage()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
@@ -62,12 +91,18 @@
     </header>
 
     <!-- ADMIN TABS NAVIGATION -->
-    <div class="partner-tabs" style="padding: 1rem 1.75rem;">
+    <div class="partner-tabs" style="padding: 1rem 1.75rem; flex-wrap: wrap; gap: 0.5rem;">
       <button type="button" class="partner-tab-btn active" id="btn-tab-orders" onclick="switchAdminPageTab('orders', this)">
-        <i class="fa-solid fa-bell"></i> Pedidos na Cozinha <span class="badge-pending-count" id="admin-orders-badge">0</span>
+        <i class="fa-solid fa-bell"></i> Pedidos <span class="badge-pending-count" id="admin-orders-badge">0</span>
+      </button>
+      <button type="button" class="partner-tab-btn" id="btn-tab-prices" onclick="switchAdminPageTab('prices', this)">
+        <i class="fa-solid fa-tags"></i> Preços das Marmitas
       </button>
       <button type="button" class="partner-tab-btn" id="btn-tab-menu" onclick="switchAdminPageTab('menu', this)">
-        <i class="fa-solid fa-drumstick-bite"></i> Opções de Carnes do Dia
+        <i class="fa-solid fa-drumstick-bite"></i> Carnes e Proteínas
+      </button>
+      <button type="button" class="partner-tab-btn" id="btn-tab-drinks" onclick="switchAdminPageTab('drinks', this)">
+        <i class="fa-solid fa-bottle-water"></i> Bebidas e Refris
       </button>
       <a href="index.html" target="_blank" class="partner-tab-btn" style="text-decoration: none; margin-left: auto; background: #e2e8f0; color: #1e293b;">
         <i class="fa-solid fa-store"></i> Ver Site do Cliente <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i>
@@ -106,25 +141,66 @@
         </div>
       </div>
 
-      <!-- TAB 2: GERENCIAR CARNES DO DIA -->
+      <!-- TAB 2: PREÇOS DAS MARMITAS -->
+      <div class="partner-tab-pane" id="pane-admin-prices">
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); margin-bottom: 0.5rem;">Preços das Marmitas</h3>
+        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Altere os valores cobrados aos clientes em cada tamanho de marmita.</p>
+
+        <form onsubmit="handleSavePrices(event)">
+          <div class="price-card-grid">
+            <div class="price-card">
+              <h4>🍱 Marmita Pequena</h4>
+              <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Individual (400g)</p>
+              <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
+              <input type="number" step="0.50" id="price-pequena" value="11.50" required />
+            </div>
+
+            <div class="price-card">
+              <h4>🍱 Marmita Média</h4>
+              <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Mais Vendida (600g)</p>
+              <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
+              <input type="number" step="0.50" id="price-media" value="13.00" required />
+            </div>
+
+            <div class="price-card">
+              <h4>🍱 Marmita Grande</h4>
+              <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Reforçada (800g)</p>
+              <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
+              <input type="number" step="0.50" id="price-grande" value="15.00" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-red">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Novos Preços das Marmitas
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 3: GERENCIAR CARNES DO DIA -->
       <div class="partner-tab-pane" id="pane-admin-menu">
         <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); margin-bottom: 0.5rem;">Carnes e Proteínas do Cardápio</h3>
-        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Cadastre ou remova as opções de carnes oferecidas aos clientes no aplicativo.</p>
+        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Cadastre, edite ou remova as opções de carnes oferecidas aos clientes.</p>
 
         <form onsubmit="handleAdminPageAddProtein(event)" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <input type="hidden" id="admin-prot-id" value="" />
           <div class="form-row">
             <div class="form-group">
               <label for="admin-prot-name">Nome da Carne / Opção</label>
-              <input type="text" id="admin-prot-name" placeholder="Ex: Peixe Grelhado ao Molho de Alcaparras" required />
+              <input type="text" id="admin-prot-name" placeholder="Ex: 🥩 Bife de Alcatra Acebolado" required />
             </div>
             <div class="form-group">
-              <label for="admin-prot-desc">Descrição / Detalhe</label>
-              <input type="text" id="admin-prot-desc" placeholder="Ex: Filé fresco grelhado na manteiga e alcaparras" required />
+              <label for="admin-prot-desc">Descrição / Detalhes</label>
+              <input type="text" id="admin-prot-desc" placeholder="Ex: Carne macia acebolada na chapa com tempero especial" required />
             </div>
           </div>
-          <button type="submit" class="btn btn-primary btn-red margin-top-sm">
-            <i class="fa-solid fa-plus"></i> Cadastrar Nova Carne no Cardápio
-          </button>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+            <button type="submit" class="btn btn-primary btn-red" id="btn-save-protein">
+              <i class="fa-solid fa-plus"></i> Cadastrar Nova Carne
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel-protein" onclick="cancelEditProtein()" style="display: none;">
+              Cancelar Edição
+            </button>
+          </div>
         </form>
 
         <div class="orders-table-wrapper">
@@ -133,11 +209,54 @@
               <tr>
                 <th>Opção de Carne</th>
                 <th>Descrição</th>
-                <th>Ação</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody id="admin-proteins-table-body">
               <!-- JS Rendered Proteins -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: GERENCIAR BEBIDAS -->
+      <div class="partner-tab-pane" id="pane-admin-drinks">
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); margin-bottom: 0.5rem;">Bebidas e Refrigerantes</h3>
+        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Cadastre, edite preços ou remova bebidas do cardápio.</p>
+
+        <form onsubmit="handleAdminPageAddDrink(event)" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <input type="hidden" id="admin-drink-id" value="" />
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label for="admin-drink-name">Nome da Bebida / Tamanho</label>
+              <input type="text" id="admin-drink-name" placeholder="Ex: 🥤 Coca-Cola 2 Litros" required />
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="admin-drink-price">Preço (R$)</label>
+              <input type="number" step="0.50" id="admin-drink-price" placeholder="10.00" required />
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+            <button type="submit" class="btn btn-primary btn-red" id="btn-save-drink">
+              <i class="fa-solid fa-plus"></i> Cadastrar Bebida
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel-drink" onclick="cancelEditDrink()" style="display: none;">
+              Cancelar Edição
+            </button>
+          </div>
+        </form>
+
+        <div class="orders-table-wrapper">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>Bebida / Produto</th>
+                <th>Preço</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="admin-drinks-table-body">
+              <!-- JS Rendered Drinks -->
             </tbody>
           </table>
         </div>
@@ -193,18 +312,15 @@
 
     let adminState = {
       orders: [],
-      proteins: [
-        { id: 'prot_1', name: '🥩 Bife de Carne na Chapa', desc: 'Carne macia grelhada na hora com tempero da casa' },
-        { id: 'prot_2', name: '🍗 Frango Grelhado', desc: 'Peito de frango suculento grelhado na chapa com ervas' },
-        { id: 'prot_3', name: '🧀 Frango Empanado', desc: 'Frango empanado crocante à Parmegiana com queijo derretido' }
-      ]
+      proteins: [],
+      drinks: [],
+      prices: { pequena: 11.50, media: 13.00, grande: 15.00 }
     };
 
     let lastOrdersCount = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
-      // Polling automático a cada 2 segundos e escuta de eventos
       setInterval(loadAdminData, 2000);
       window.addEventListener('storage', loadAdminData);
     });
@@ -245,6 +361,7 @@
     }
 
     async function loadAdminData() {
+      // Orders
       try {
         const res = await fetch('/api/orders');
         if (res.ok) {
@@ -255,27 +372,34 @@
           lastOrdersCount = parsed.length;
           adminState.orders = parsed;
         }
-      } catch(e) {
-        const savedOrders = localStorage.getItem('bcmarmitas_orders');
-        if (savedOrders) adminState.orders = JSON.parse(savedOrders);
-      }
+      } catch(e) {}
 
+      // Proteins
       try {
         const resP = await fetch('/api/proteins');
-        if (resP.ok) {
-          adminState.proteins = await resP.json();
+        if (resP.ok) adminState.proteins = await resP.json();
+      } catch(e) {}
+
+      // Drinks
+      try {
+        const resD = await fetch('/api/drinks');
+        if (resD.ok) adminState.drinks = await resD.json();
+      } catch(e) {}
+
+      // Prices
+      try {
+        const resPr = await fetch('/api/menu-prices');
+        if (resPr.ok) {
+          adminState.prices = await resPr.json();
+          document.getElementById('price-pequena').value = adminState.prices.pequena || 11.50;
+          document.getElementById('price-media').value = adminState.prices.media || 13.00;
+          document.getElementById('price-grande').value = adminState.prices.grande || 15.00;
         }
       } catch(e) {}
 
       renderAdminPageOrdersUI();
       renderAdminPageProteins();
-    }
-
-    function saveAdminData() {
-      try {
-        localStorage.setItem('bcmarmitas_orders', JSON.stringify(adminState.orders));
-        localStorage.setItem('bcmarmitas_proteins', JSON.stringify(adminState.proteins));
-      } catch(e) {}
+      renderAdminPageDrinks();
     }
 
     function renderAdminPageOrdersUI() {
@@ -340,10 +464,33 @@
         });
       } catch(e) {}
 
-      saveAdminData();
       renderAdminPageOrdersUI();
     }
 
+    // --- MARMITA PRICES ---
+    async function handleSavePrices(e) {
+      e.preventDefault();
+      const pReq = {
+        pequena: parseFloat(document.getElementById('price-pequena').value),
+        media: parseFloat(document.getElementById('price-media').value),
+        grande: parseFloat(document.getElementById('price-grande').value)
+      };
+
+      try {
+        const res = await fetch('/api/menu-prices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pReq)
+        });
+        if (res.ok) {
+          showToast('Preços das marmitas atualizados com sucesso!', 'success');
+        }
+      } catch(e) {
+        showToast('Erro ao salvar preços.', 'warning');
+      }
+    }
+
+    // --- PROTEINS / CARNES ---
     function renderAdminPageProteins() {
       const body = document.getElementById('admin-proteins-table-body');
       if (!body) return;
@@ -353,39 +500,165 @@
           <td><strong>${p.name}</strong></td>
           <td>${p.desc}</td>
           <td>
-            <button class="btn btn-secondary btn-sm" onclick="deleteAdminProtein('${p.id}')">
-              <i class="fa-solid fa-trash text-red"></i> Excluir
-            </button>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn btn-secondary btn-sm" onclick="editAdminProtein('${p.id}')">
+                <i class="fa-solid fa-pen"></i> Editar
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="deleteAdminProtein('${p.id}')">
+                <i class="fa-solid fa-trash text-red"></i> Excluir
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
     }
 
-    function handleAdminPageAddProtein(e) {
+    async function handleAdminPageAddProtein(e) {
       e.preventDefault();
+      const id = document.getElementById('admin-prot-id').value;
       const name = document.getElementById('admin-prot-name').value.trim();
       const desc = document.getElementById('admin-prot-desc').value.trim();
 
-      adminState.proteins.push({
-        id: 'prot_' + Date.now(),
-        name: name,
-        desc: desc
-      });
+      const payload = { id: id || undefined, name, desc };
 
-      saveAdminData();
-      renderAdminPageProteins();
-      e.target.reset();
-      showToast(`Nova opção "${name}" adicionada ao cardápio!`, 'success');
+      try {
+        const res = await fetch('/api/proteins', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.proteins = data.proteins;
+          cancelEditProtein();
+          renderAdminPageProteins();
+          showToast(id ? 'Carne atualizada!' : `Nova carne "${name}" cadastrada!`, 'success');
+        }
+      } catch(e) {
+        showToast('Erro ao salvar carne.', 'warning');
+      }
     }
 
-    function deleteAdminProtein(id) {
-      if (!confirm('Deseja excluir esta opção de carne do cardápio?')) return;
-      adminState.proteins = adminState.proteins.filter(p => p.id !== id);
-      saveAdminData();
-      renderAdminPageProteins();
-      showToast('Opção removida.', 'info');
+    function editAdminProtein(id) {
+      const p = adminState.proteins.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('admin-prot-id').value = p.id;
+      document.getElementById('admin-prot-name').value = p.name;
+      document.getElementById('admin-prot-desc').value = p.desc;
+      document.getElementById('btn-save-protein').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+      document.getElementById('btn-cancel-protein').style.display = 'inline-block';
     }
 
+    function cancelEditProtein() {
+      document.getElementById('admin-prot-id').value = '';
+      document.getElementById('admin-prot-name').value = '';
+      document.getElementById('admin-prot-desc').value = '';
+      document.getElementById('btn-save-protein').innerHTML = '<i class="fa-solid fa-plus"></i> Cadastrar Nova Carne';
+      document.getElementById('btn-cancel-protein').style.display = 'none';
+    }
+
+    async function deleteAdminProtein(id) {
+      if (!confirm('Deseja excluir esta opção de carne?')) return;
+      try {
+        const res = await fetch('/api/proteins/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.proteins = data.proteins;
+          renderAdminPageProteins();
+          showToast('Opção de carne removida.', 'info');
+        }
+      } catch(e) {}
+    }
+
+    // --- DRINKS / BEBIDAS ---
+    function renderAdminPageDrinks() {
+      const body = document.getElementById('admin-drinks-table-body');
+      if (!body) return;
+
+      body.innerHTML = adminState.drinks.map(d => `
+        <tr>
+          <td><strong>${d.name}</strong></td>
+          <td><strong class="text-red">R$ ${(d.price || 0).toFixed(2).replace('.', ',')}</strong></td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn btn-secondary btn-sm" onclick="editAdminDrink('${d.id}')">
+                <i class="fa-solid fa-pen"></i> Editar
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="deleteAdminDrink('${d.id}')">
+                <i class="fa-solid fa-trash text-red"></i> Excluir
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleAdminPageAddDrink(e) {
+      e.preventDefault();
+      const id = document.getElementById('admin-drink-id').value;
+      const name = document.getElementById('admin-drink-name').value.trim();
+      const price = parseFloat(document.getElementById('admin-drink-price').value);
+
+      const payload = { id: id || undefined, name, price };
+
+      try {
+        const res = await fetch('/api/drinks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.drinks = data.drinks;
+          cancelEditDrink();
+          renderAdminPageDrinks();
+          showToast(id ? 'Bebida atualizada!' : `Bebida "${name}" cadastrada!`, 'success');
+        }
+      } catch(e) {
+        showToast('Erro ao salvar bebida.', 'warning');
+      }
+    }
+
+    function editAdminDrink(id) {
+      const d = adminState.drinks.find(x => x.id === id);
+      if (!d) return;
+      document.getElementById('admin-drink-id').value = d.id;
+      document.getElementById('admin-drink-name').value = d.name;
+      document.getElementById('admin-drink-price').value = d.price;
+      document.getElementById('btn-save-drink').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+      document.getElementById('btn-cancel-drink').style.display = 'inline-block';
+    }
+
+    function cancelEditDrink() {
+      document.getElementById('admin-drink-id').value = '';
+      document.getElementById('admin-drink-name').value = '';
+      document.getElementById('admin-drink-price').value = '';
+      document.getElementById('btn-save-drink').innerHTML = '<i class="fa-solid fa-plus"></i> Cadastrar Bebida';
+      document.getElementById('btn-cancel-drink').style.display = 'none';
+    }
+
+    async function deleteAdminDrink(id) {
+      if (!confirm('Deseja excluir esta bebida?')) return;
+      try {
+        const res = await fetch('/api/drinks/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.drinks = data.drinks;
+          renderAdminPageDrinks();
+          showToast('Bebida removida.', 'info');
+        }
+      } catch(e) {}
+    }
+
+    // --- TAB SWITCHING ---
     function switchAdminPageTab(tabName, btn) {
       document.querySelectorAll('.partner-tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.partner-tab-pane').forEach(p => p.classList.remove('active'));
@@ -394,8 +667,12 @@
 
       if (tabName === 'orders') {
         document.getElementById('pane-admin-orders').classList.add('active');
-      } else {
+      } else if (tabName === 'prices') {
+        document.getElementById('pane-admin-prices').classList.add('active');
+      } else if (tabName === 'menu') {
         document.getElementById('pane-admin-menu').classList.add('active');
+      } else if (tabName === 'drinks') {
+        document.getElementById('pane-admin-drinks').classList.add('active');
       }
     }
 
