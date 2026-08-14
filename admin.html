@@ -391,9 +391,12 @@
         const resPr = await fetch('/api/menu-prices');
         if (resPr.ok) {
           adminState.prices = await resPr.json();
-          document.getElementById('price-pequena').value = adminState.prices.pequena || 11.50;
-          document.getElementById('price-media').value = adminState.prices.media || 13.00;
-          document.getElementById('price-grande').value = adminState.prices.grande || 15.00;
+          const pEl = document.getElementById('price-pequena');
+          const mEl = document.getElementById('price-media');
+          const gEl = document.getElementById('price-grande');
+          if (pEl && document.activeElement !== pEl) pEl.value = adminState.prices.pequena || 11.50;
+          if (mEl && document.activeElement !== mEl) mEl.value = adminState.prices.media || 13.00;
+          if (gEl && document.activeElement !== gEl) gEl.value = adminState.prices.grande || 15.00;
         }
       } catch(e) {}
 
