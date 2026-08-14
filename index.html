@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BC Marmitas - Comida Caseira em Balneário Camboriú</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="styles.css?v=1.1" />
+</head>
+<body>
+
+  <!-- MOBILE APP CONTAINER FRAME -->
+  <div class="mobile-app-shell">
+
+    <!-- RESTAURANT BRANDED HEADER -->
+    <header class="app-header brand-header">
+      <div class="brand-title-group">
+        <div class="brand-logo-circle">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div class="brand-name-box">
+          <h1>BC MARMITAS</h1>
+          <p><i class="fa-solid fa-location-dot text-yellow"></i> Balneário Camboriú • SC</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- DELIVERY / PICKUP TOGGLE BAR -->
+    <section class="fulfillment-bar">
+      <div class="fulfillment-toggle">
+        <button class="f-btn active" id="f-btn-delivery" onclick="setFulfillmentMode('delivery')">
+          <i class="fa-solid fa-motorcycle"></i> Entrega (Delivery)
+        </button>
+        <button class="f-btn" id="f-btn-pickup" onclick="setFulfillmentMode('pickup')">
+          <i class="fa-solid fa-store"></i> Retirar no Balcão
+        </button>
+      </div>
+      <div class="address-subbar">
+        <i class="fa-solid fa-map-pin text-red"></i>
+        <span id="delivery-address-display">Entregar em: Centro, Balneário Camboriú (20-30 min)</span>
+      </div>
+    </section>
+
+    <!-- BANNER PROMO & CARDÁPIO DO DIA -->
+    <section class="today-menu-banner">
+      <div class="banner-card">
+        <span class="banner-badge">CARDÁPIO DO DIA</span>
+        <h2>Comida Caseira Caprichada 🍱</h2>
+        <p>Feita na hora com ingredientes frescos de BC!</p>
+        <div class="banner-features">
+          <span><i class="fa-solid fa-circle-check text-yellow"></i> Arroz, Feijão & Salada grátis</span>
+          <span><i class="fa-solid fa-bolt text-yellow"></i> Entrega rápida em BC</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK CATEGORY NAV TABS -->
+    <section class="categories-section">
+      <div class="categories-scroll" id="categories-container">
+        <button class="cat-pill active" data-cat="marmitas" onclick="scrollToSection('sec-marmitas', this)">
+          <span class="cat-emoji">🍱</span>
+          <span>Marmitas Caseiras</span>
+        </button>
+        <button class="cat-pill" data-cat="bebidas" onclick="scrollToSection('sec-bebidas', this)">
+          <span class="cat-emoji">🥤</span>
+          <span>Refrigerantes (Lata)</span>
+        </button>
+        <button class="cat-pill" data-cat="adicionais" onclick="scrollToSection('sec-adicionais', this)">
+          <span class="cat-emoji">🍳</span>
+          <span>Adicionais Extras</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- MAIN APP CONTENT (MARMITAS & BEBIDAS CATALOG) -->
+    <main class="feed-section">
+
+      <!-- SECTION 1: ECOLHA O TAMANHO DA MARMITA -->
+      <section class="catalog-group" id="sec-marmitas">
+        <div class="group-header">
+          <h3>🍱 1. Escolha o Tamanho da Marmita</h3>
+          <p>Todas acompanham Arroz, Feijão, Farofa e Salada do dia</p>
+        </div>
+
+        <div class="marmita-sizes-grid">
+          
+          <!-- MARMITA PEQUENA: R$ 10,00 -->
+          <div class="marmita-card" onclick="openMarmitaBuilderModal('pequena', 'Marmita Pequena', 10.00)">
+            <div class="marmita-badge">INDIVIDUAL</div>
+            <div class="marmita-img">
+              <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400" alt="Marmita Pequena" />
+            </div>
+            <div class="marmita-details">
+              <h4>Marmita Pequena</h4>
+              <p>Ideal para 1 pessoa (400g). Proteína + Acompanhamentos.</p>
+              <div class="marmita-price-row">
+                <span class="marmita-price">R$ 10,00</span>
+                <button type="button" class="btn-select-marmita" onclick="openMarmitaBuilderModal('pequena', 'Marmita Pequena', 10.00)"><i class="fa-solid fa-plus"></i> Montar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MARMITA MÉDIA: R$ 13,00 -->
+          <div class="marmita-card popular-card" onclick="openMarmitaBuilderModal('media', 'Marmita Média', 13.00)">
+            <div class="marmita-badge badge-popular">🔥 A MAIS PEDIDA</div>
+            <div class="marmita-img">
+              <img src="https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=400" alt="Marmita Média" />
+            </div>
+            <div class="marmita-details">
+              <h4>Marmita Média</h4>
+              <p>Tamanho padrão bem servido (650g). Proteína + Acompanhamentos.</p>
+              <div class="marmita-price-row">
+                <span class="marmita-price">R$ 13,00</span>
+                <button type="button" class="btn-select-marmita" onclick="openMarmitaBuilderModal('media', 'Marmita Média', 13.00)"><i class="fa-solid fa-plus"></i> Montar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MARMITA GRANDE: R$ 15,00 -->
+          <div class="marmita-card" onclick="openMarmitaBuilderModal('grande', 'Marmita Grande', 15.00)">
+            <div class="marmita-badge">REFORÇADA</div>
+            <div class="marmita-img">
+              <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=400" alt="Marmita Grande" />
+            </div>
+            <div class="marmita-details">
+              <h4>Marmita Grande</h4>
+              <p>Para quem tem bastante fome (850g). Proteína farta + Acompanhamentos.</p>
+              <div class="marmita-price-row">
+                <span class="marmita-price">R$ 15,00</span>
+                <button type="button" class="btn-select-marmita" onclick="openMarmitaBuilderModal('grande', 'Marmita Grande', 15.00)"><i class="fa-solid fa-plus"></i> Montar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 2: REFRIGERANTES LATA -->
+      <section class="catalog-group margin-top-lg" id="sec-bebidas">
+        <div class="group-header">
+          <h3>🥤 2. Refrigerantes & Bebidas (Lata 350ml)</h3>
+          <p>Geladinhas para acompanhar sua refeição em BC</p>
+        </div>
+
+        <div class="drinks-list" id="drinks-container">
+          <!-- JS Rendered Drinks -->
+        </div>
+      </section>
+
+      <!-- SECTION 3: ADICIONAIS EXTRAS -->
+      <section class="catalog-group margin-top-lg" id="sec-adicionais">
+        <div class="group-header">
+          <h3>🍳 3. Adicionais & Extras</h3>
+          <p>Deixe sua marmita ainda mais gostosa</p>
+        </div>
+
+        <div class="extras-list" id="extras-container">
+          <!-- JS Rendered Extras -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FIXED FLOATING ORDER CART BAR (BARRA FIXA SEU PEDIDO) -->
+    <div class="sticky-cart-bar" id="sticky-cart-bar" style="display: none;" onclick="toggleCartDrawer()">
+      <div class="sticky-cart-info">
+        <div class="sticky-cart-count-badge" id="sticky-cart-count">1</div>
+        <div class="sticky-cart-text">
+          <span>Ver Seu Pedido</span>
+          <small id="sticky-cart-subtext">BC Marmitas</small>
+        </div>
+      </div>
+      <div class="sticky-cart-total-group">
+        <strong id="sticky-cart-total">R$ 13,00</strong>
+        <i class="fa-solid fa-chevron-right"></i>
+      </div>
+    </div>
+
+    <!-- BOTTOM FLOATING NAVIGATION BAR -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="switchMainTab('home', this)">
+        <i class="fa-solid fa-utensils"></i>
+        <span>Cardápio</span>
+      </button>
+      <button class="nav-item nav-item-cart" onclick="toggleCartDrawer()">
+        <div class="cart-icon-box">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="nav-cart-badge" id="nav-cart-count">0</span>
+        </div>
+        <span>Seu Pedido</span>
+      </button>
+      <button class="nav-item" onclick="openMyOrdersModal()">
+        <i class="fa-solid fa-receipt"></i>
+        <span>Meus Pedidos</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- MODAL: MONTAR MARMITA PASSO A PASSO -->
+  <div class="modal-overlay" id="modal-marmita-builder">
+    <div class="modal-content modal-full-height">
+      <div class="modal-header bg-red">
+        <div>
+          <h3 id="builder-modal-title">Montar Marmita Média</h3>
+          <span style="font-size: 0.8rem; opacity: 0.9;" id="builder-modal-price">Valor Base: R$ 13,00</span>
+        </div>
+        <button class="btn-close-modal" onclick="closeMarmitaBuilderModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="builder-body">
+        
+        <!-- PASSO 1: ACOMPANHAMENTOS BASE -->
+        <div class="builder-section">
+          <h4 class="step-header">1. Acompanhamentos da Marmita <span class="text-red">*</span></h4>
+          <div class="options-group" id="sides-options-container">
+            <label class="checkbox-option">
+              <input type="checkbox" name="marmita-sides" value="Arroz Branco Soltinho" checked />
+              <span>🍚 Arroz Soltinho</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="marmita-sides" value="Feijão Caseiro no Alho" checked />
+              <span>🫘 Feijão Caseiro Temperado</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" name="marmita-sides" value="Macarrão ao Molho" checked />
+              <span>🍝 Macarrão ao Molho Caseiro</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PASSO 2: CARNE / PROTEÍNA -->
+        <div class="builder-section margin-top-md">
+          <h4 class="step-header">2. Escolha a Carne / Proteína <span class="text-red">*</span></h4>
+          <div class="options-group" id="protein-options-container">
+            <label class="radio-option">
+              <input type="radio" name="marmita-protein" value="Bife de Carne na Chapa" checked />
+              <div class="radio-content">
+                <strong>🥩 Carne (Bife de Alcatra / Grelhada na Chapa)</strong>
+                <small>Carne macia grelhada na hora com tempero da casa</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-protein" value="Frango Grelhado" />
+              <div class="radio-content">
+                <strong>🍗 Frango Grelhado</strong>
+                <small>Peito de frango suculento grelhado na chapa com ervas</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-protein" value="Frango Empanado" />
+              <div class="radio-content">
+                <strong>🧀 Frango Empanado (Crocante à Parmegiana)</strong>
+                <small>Frango empanado bem crocante com queijo derretido</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- PASSO 3: REFRIGERANTE OU ÁGUA -->
+        <div class="builder-section margin-top-md">
+          <h4 class="step-header">3. Escolha o Refrigerante ou Água (Opcional)</h4>
+          <div class="options-group" id="drink-selection-container">
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="sem_bebida" data-price="0.00" onchange="calcBuilderTotal()" checked />
+              <div class="radio-content">
+                <strong>❌ Sem Bebida</strong>
+                <small>Apenas a marmita caprichada</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Coca-Cola Lata 350ml (+ R$ 5,00)" data-price="5.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>🥤 Coca-Cola Lata 350ml (+ R$ 5,00)</strong>
+                <small>Geladinha</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Coca-Cola Zero Lata 350ml (+ R$ 5,00)" data-price="5.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>🥤 Coca-Cola Zero Lata 350ml (+ R$ 5,00)</strong>
+                <small>Geladinha</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Guaraná Antarctica Lata 350ml (+ R$ 5,00)" data-price="5.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>🥤 Guaraná Antarctica Lata 350ml (+ R$ 5,00)</strong>
+                <small>Geladinho</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Fanta Laranja Lata 350ml (+ R$ 5,00)" data-price="5.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>🥤 Fanta Laranja Lata 350ml (+ R$ 5,00)</strong>
+                <small>Geladinha</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Sprite Lata 350ml (+ R$ 5,00)" data-price="5.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>🥤 Sprite Lata 350ml (+ R$ 5,00)</strong>
+                <small>Geladinha</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Água Mineral sem Gás 500ml (+ R$ 3,50)" data-price="3.50" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>💧 Água Mineral sem Gás 500ml (+ R$ 3,50)</strong>
+                <small>Fresca</small>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="marmita-drink" value="Água Mineral com Gás 500ml (+ R$ 4,00)" data-price="4.00" onchange="calcBuilderTotal()" />
+              <div class="radio-content">
+                <strong>💧 Água Mineral com Gás 500ml (+ R$ 4,00)</strong>
+                <small>Geladinha com gás</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- OBSERVAÇÕES DO CLIENTE -->
+        <div class="builder-section margin-top-md">
+          <h4 class="step-header">Observações para a Cozinha</h4>
+          <input type="text" id="marmita-notes" placeholder="Ex: Sem cebola, feijão por baixo..." />
+        </div>
+
+      </div>
+
+      <div class="builder-footer">
+        <div class="builder-total-box">
+          <span>Total desta Marmita:</span>
+          <strong id="builder-final-price" class="text-red">R$ 13,00</strong>
+        </div>
+        <button class="btn btn-primary btn-red btn-glow" onclick="confirmAddMarmitaToCart()">
+          <i class="fa-solid fa-cart-plus"></i> Adicionar ao Pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAWER: SEU PEDIDO / SACOLA -->
+  <div class="drawer-overlay" id="cart-drawer-overlay" onclick="toggleCartDrawer()"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="drawer-header bg-red">
+      <h3><i class="fa-solid fa-bag-shopping"></i> Seu Pedido - BC Marmitas</h3>
+      <button class="btn-close-drawer" onclick="toggleCartDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Step 1: Items List -->
+    <div class="drawer-body" id="cart-step-items">
+      <div class="cart-items-list" id="cart-items-container">
+        <!-- JS Rendered Cart Items -->
+      </div>
+
+      <div class="cart-checkout-details" id="cart-details-box">
+        
+        <!-- Bairro de Balneário Camboriú -->
+        <div class="form-group margin-top-md">
+          <label for="checkout-bairro-bc"><i class="fa-solid fa-map-pin text-red"></i> Seu Bairro em Balneário Camboriú</label>
+          <select id="checkout-bairro-bc" onchange="updateDeliveryFeeBC()">
+            <option value="Centro" data-fee="3.00">Centro (Taxa R$ 3,00)</option>
+            <option value="Barra Norte" data-fee="4.00">Barra Norte (Taxa R$ 4,00)</option>
+            <option value="Barra Sul" data-fee="4.00">Barra Sul (Taxa R$ 4,00)</option>
+            <option value="Nações" data-fee="3.00">Bairro das Nações (Taxa R$ 3,00)</option>
+            <option value="Estados" data-fee="3.50">Bairro dos Estados (Taxa R$ 3,50)</option>
+            <option value="Ariribá" data-fee="5.00">Ariribá (Taxa R$ 5,00)</option>
+            <option value="Vila Real" data-fee="4.00">Vila Real (Taxa R$ 4,00)</option>
+            <option value="Pioneiros" data-fee="4.00">Pioneiros (Taxa R$ 4,00)</option>
+            <option value="Retirada Balcao" data-fee="0.00">🛍️ Retirar no Balcão (Sem Taxa)</option>
+          </select>
+        </div>
+
+        <div class="form-group margin-top-sm">
+          <label for="checkout-address-input">Rua e Número da Entrega</label>
+          <input type="text" id="checkout-address-input" placeholder="Ex: Av. Brasil, 1500 - Apto 402" required />
+        </div>
+
+        <div class="form-group margin-top-sm">
+          <label for="checkout-payment-method"><i class="fa-solid fa-wallet text-red"></i> Forma de Pagamento</label>
+          <select id="checkout-payment-method">
+            <option value="pix">⚡ PIX (Aprovação Instantânea)</option>
+            <option value="card">💳 Cartão de Crédito/Débito na Entrega</option>
+            <option value="cash">💵 Dinheiro (Troco na Entrega)</option>
+          </select>
+        </div>
+
+        <div class="cart-summary-box margin-top-md">
+          <div class="summary-row">
+            <span>Subtotal Refeições:</span>
+            <span id="cart-subtotal">R$ 0,00</span>
+          </div>
+          <div class="summary-row">
+            <span>Taxa de Entrega (BC):</span>
+            <span id="cart-fee-display">R$ 3,00</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total a Pagar:</span>
+            <strong id="cart-total-price" class="text-red">R$ 0,00</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: PIX Checkout Confirmation -->
+    <div class="drawer-body" id="cart-step-pix" style="display: none;">
+      <div class="pix-payment-box">
+        <div class="pix-badge"><i class="fa-solid fa-qrcode"></i> CHAVE PIX - BC MARMITAS</div>
+        <p class="pix-instructions">Escaneie o QR Code ou copie o código abaixo para pagar no app do seu banco:</p>
+        
+        <div class="qr-code-wrapper">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=00020126580014br.gov.bcb.pix0136bcmarmitas-bc-santa-catarina-pix-key" alt="QR Code PIX BC Marmitas" />
+        </div>
+
+        <div class="pix-copy-box margin-top-md">
+          <input type="text" readonly id="pix-copy-input" value="00020126580014br.gov.bcb.pix0136bcmarmitas-pix-chave-99120" />
+          <button class="btn btn-secondary" onclick="copyPixCode()"><i class="fa-solid fa-copy"></i> Copiar</button>
+        </div>
+
+        <button class="btn btn-success btn-full margin-top-md" onclick="confirmPaymentAndSendToKitchen()">
+          <i class="fa-solid fa-check-circle"></i> Enviar Pedido para a Cozinha!
+        </button>
+      </div>
+    </div>
+
+    <div class="drawer-footer" id="cart-footer-actions">
+      <button class="btn btn-secondary" onclick="clearCart()">Limpar</button>
+      <button class="btn btn-primary btn-red btn-glow" onclick="proceedToCheckoutPayment()">
+        <i class="fa-solid fa-arrow-right"></i> Finalizar Pedido
+      </button>
+    </div>
+  </aside>
+
+  <!-- MODAL: MEUS PEDIDOS & ACOMPANHAMENTO -->
+  <div class="modal-overlay" id="modal-my-orders">
+    <div class="modal-content modal-lg">
+      <div class="modal-header bg-dark">
+        <h3><i class="fa-solid fa-receipt text-red"></i> Acompanhe seu Pedido em BC</h3>
+        <button class="btn-close-modal" onclick="closeMyOrdersModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div id="user-orders-tracker-list">
+          <!-- JS Rendered Orders -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript -->
+  <script src="app.js?v=1.2"></script>
+</body>
+</html>
