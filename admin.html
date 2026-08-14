@@ -122,7 +122,10 @@
             <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark);">Pedidos em Tempo Real</h3>
             <p style="font-size: 0.8rem; color: var(--color-muted);">Acompanhe e avance os pedidos da chapa para entrega em Balneário Camboriú</p>
           </div>
-          <button class="btn btn-secondary btn-sm" onclick="renderAdminPageOrders()"><i class="fa-solid fa-rotate"></i> Atualizar Pedidos</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="playNotificationSound('new_order')"><i class="fa-solid fa-volume-high text-red"></i> Testar Som</button>
+            <button class="btn btn-secondary btn-sm" onclick="renderAdminPageOrders()"><i class="fa-solid fa-rotate"></i> Atualizar Pedidos</button>
+          </div>
         </div>
 
         <div class="orders-table-wrapper">
@@ -441,6 +444,35 @@
       location.reload();
     }
 
+    function playNotificationSound(type = 'new_order') {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        if (type === 'new_order') {
+          // Três notas alegres para a cozinha: E5 -> A5 -> C6
+          const notes = [659.25, 880.00, 1046.50];
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const startTime = now + (idx * 0.15);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.4, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.35);
+          });
+        }
+      } catch(e) {}
+    }
+
     async function loadAdminData() {
       // Orders
       try {
@@ -449,6 +481,7 @@
           const parsed = await res.json();
           if (parsed.length > lastOrdersCount && lastOrdersCount !== 0) {
             showToast(`🔔 NOVO PEDIDO CHEGOU NA COZINHA! (${parsed[0].id})`, 'success');
+            playNotificationSound('new_order');
           }
           lastOrdersCount = parsed.length;
           adminState.orders = parsed;
