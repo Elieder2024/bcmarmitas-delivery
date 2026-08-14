@@ -1,0 +1,38 @@
+[
+  {
+    "id": "rew_1",
+    "name": "🥤 Refrigerante Lata Grátis",
+    "points": 50,
+    "desc": "Qualquer refrigerante lata 350ml da casa",
+    "type": "drink",
+    "value": 5.00,
+    "icon": "🥤"
+  },
+  {
+    "id": "rew_2",
+    "name": "🍳 Porção Extra de Batata Frita",
+    "points": 80,
+    "desc": "Porção extra crocante de batata frita",
+    "type": "extra",
+    "value": 6.00,
+    "icon": "🍟"
+  },
+  {
+    "id": "rew_3",
+    "name": "💰 Cupom de R$ 10,00 de Desconto",
+    "points": 100,
+    "desc": "Desconto de R$ 10,00 no valor total do pedido",
+    "type": "discount",
+    "value": 10.00,
+    "icon": "🏷️"
+  },
+  {
+    "id": "rew_4",
+    "name": "🍱 Marmita Pequena Grátis",
+    "points": 150,
+    "desc": "1x Marmita Pequena com proteína à sua escolha",
+    "type": "marmita",
+    "value": 11.50,
+    "icon": "🍱"
+  }
+]
