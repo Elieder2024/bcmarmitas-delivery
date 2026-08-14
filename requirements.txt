@@ -1,0 +1,2 @@
+# BC Marmitas - App de Delivery
+# Python stdlib only, no extra dependencies needed
