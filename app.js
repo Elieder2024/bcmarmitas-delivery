@@ -764,6 +764,16 @@ function renderUserOrdersTracker() {
             <i class="fa-solid fa-motorcycle" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
             <span>🛵 A Caminho</span>
           </div>
+          <div style="text-align: center; color: ${o.status === 'ENTREGUE' ? 'var(--color-emerald)' : '#64748b'};">
+            <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
+            <span>🎉 Entregue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 // --- PROGRAMA DE FIDELIDADE (JS) ---
 state.currentUser = null;
 state.rewards = [];
@@ -965,15 +975,6 @@ async function redeemRewardItem(rewardId) {
   } catch(e) {
     showToast('Erro de conexão ao resgatar.', 'warning');
   }
-}
-        </div>
-
-        <div style="margin-top: 0.6rem; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-          <div style="height: 100%; width: ${o.status === 'EM_PREPARO' ? '33%' : (o.status === 'SAIU_ENTREGA' ? '66%' : '100%')}; background: ${o.status === 'ENTREGUE' ? 'var(--color-emerald)' : 'var(--color-red)'}; transition: width 0.5s ease;"></div>
-        </div>
-      </div>
-    </div>
-  `).join('');
 }
 
 function openMyOrdersModal() {
