@@ -818,7 +818,8 @@ function switchLoyaltyAuthTab(tab) {
 async function handleLoyaltyRegister(e) {
   e.preventDefault();
   const name = document.getElementById('loyalty-reg-name').value.trim();
-  const phone = document.getElementById('loyalty-reg-phone').value.trim();
+  const rawPhone = document.getElementById('loyalty-reg-phone').value.trim();
+  const phone = rawPhone.replace(/\D/g, '');
   const password = document.getElementById('loyalty-reg-pass').value.trim();
 
   try {
@@ -843,7 +844,8 @@ async function handleLoyaltyRegister(e) {
 
 async function handleLoyaltyLogin(e) {
   e.preventDefault();
-  const phone = document.getElementById('loyalty-login-phone').value.trim();
+  const rawPhone = document.getElementById('loyalty-login-phone').value.trim();
+  const phone = rawPhone.replace(/\D/g, '');
   const password = document.getElementById('loyalty-login-pass').value.trim();
 
   try {
@@ -859,7 +861,7 @@ async function handleLoyaltyLogin(e) {
       showToast(`Bem-vindo de volta, ${state.currentUser.name}!`, 'success');
       updateLoyaltyUI();
     } else {
-      showToast(data.message || 'WhatsApp ou senha incorretos.', 'warning');
+      showToast(data.message || 'WhatsApp ou senha incorretos. Se for seu primeiro acesso, clique na aba "Criar Nova Conta" ao lado!', 'warning');
     }
   } catch(e) {
     showToast('Erro de conexão ao entrar.', 'warning');
