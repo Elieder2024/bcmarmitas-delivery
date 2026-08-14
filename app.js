@@ -476,9 +476,13 @@ async function confirmPaymentAndSendToKitchen() {
   }
   let total = subtotal + fee;
 
+  const clientName = state.currentUser ? state.currentUser.name : 'Cliente BC';
+  const clientPhone = state.currentUser ? state.currentUser.phone : '';
+
   const newOrder = {
     id: 'BC-' + Math.floor(1000 + Math.random() * 9000),
-    clientName: 'Cliente BC',
+    clientName: clientName,
+    clientPhone: clientPhone,
     address: `${address}, Bairro: ${bairro} (Balneário Camboriú)`,
     items: itemsText,
     total: total,
@@ -741,10 +745,208 @@ function renderUserOrdersTracker() {
             <i class="fa-solid fa-motorcycle" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
             <span>🛵 A Caminho</span>
           </div>
-          <div style="text-align: center; color: ${o.status === 'ENTREGUE' ? 'var(--color-emerald)' : '#64748b'};">
-            <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
-            <span>🎉 Entregue</span>
-          </div>
+// --- PROGRAMA DE FIDELIDADE (JS) ---
+state.currentUser = null;
+state.rewards = [];
+
+// Load user session from localStorage if available
+try {
+  const savedUser = localStorage.getItem('bcmarmitas_customer');
+  if (savedUser) state.currentUser = JSON.parse(savedUser);
+} catch(e) {}
+
+function openLoyaltyModal() {
+  const modal = document.getElementById('modal-loyalty');
+  if (modal) modal.classList.add('active');
+  updateLoyaltyUI();
+  fetchRewardsCatalog();
+}
+
+function closeLoyaltyModal() {
+  const modal = document.getElementById('modal-loyalty');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchLoyaltyAuthTab(tab) {
+  const btnLogin = document.getElementById('btn-loyalty-tab-login');
+  const btnReg = document.getElementById('btn-loyalty-tab-reg');
+  const formLogin = document.getElementById('form-loyalty-login');
+  const formReg = document.getElementById('form-loyalty-register');
+
+  if (tab === 'login') {
+    btnLogin.classList.add('active');
+    btnReg.classList.remove('active');
+    formLogin.style.display = 'block';
+    formReg.style.display = 'none';
+  } else {
+    btnReg.classList.add('active');
+    btnLogin.classList.remove('active');
+    formReg.style.display = 'block';
+    formLogin.style.display = 'none';
+  }
+}
+
+async function handleLoyaltyRegister(e) {
+  e.preventDefault();
+  const name = document.getElementById('loyalty-reg-name').value.trim();
+  const phone = document.getElementById('loyalty-reg-phone').value.trim();
+  const password = document.getElementById('loyalty-reg-pass').value.trim();
+
+  try {
+    const res = await fetch('/api/customers/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      state.currentUser = data.customer;
+      localStorage.setItem('bcmarmitas_customer', JSON.stringify(state.currentUser));
+      showToast(data.message || 'Conta criada com sucesso!', 'success');
+      updateLoyaltyUI();
+    } else {
+      showToast(data.message || 'Erro ao criar conta.', 'warning');
+    }
+  } catch(e) {
+    showToast('Erro de conexão ao cadastrar.', 'warning');
+  }
+}
+
+async function handleLoyaltyLogin(e) {
+  e.preventDefault();
+  const phone = document.getElementById('loyalty-login-phone').value.trim();
+  const password = document.getElementById('loyalty-login-pass').value.trim();
+
+  try {
+    const res = await fetch('/api/customers/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      state.currentUser = data.customer;
+      localStorage.setItem('bcmarmitas_customer', JSON.stringify(state.currentUser));
+      showToast(`Bem-vindo de volta, ${state.currentUser.name}!`, 'success');
+      updateLoyaltyUI();
+    } else {
+      showToast(data.message || 'WhatsApp ou senha incorretos.', 'warning');
+    }
+  } catch(e) {
+    showToast('Erro de conexão ao entrar.', 'warning');
+  }
+}
+
+function handleLoyaltyLogout() {
+  state.currentUser = null;
+  localStorage.removeItem('bcmarmitas_customer');
+  updateLoyaltyUI();
+  showToast('Você saiu da sua conta de fidelidade.', 'info');
+}
+
+function updateLoyaltyUI() {
+  const authDiv = document.getElementById('loyalty-auth-container');
+  const dashDiv = document.getElementById('loyalty-dashboard-container');
+
+  if (state.currentUser) {
+    if (authDiv) authDiv.style.display = 'none';
+    if (dashDiv) dashDiv.style.display = 'block';
+
+    const nameEl = document.getElementById('loyalty-user-name');
+    const phoneEl = document.getElementById('loyalty-user-phone');
+    const ptsEl = document.getElementById('loyalty-user-points');
+
+    if (nameEl) nameEl.innerText = `Olá, ${state.currentUser.name}!`;
+    if (phoneEl) phoneEl.innerText = `Whats: ${state.currentUser.phone}`;
+    if (ptsEl) ptsEl.innerText = `⭐ ${state.currentUser.points} Pontos`;
+
+    renderRewardsCatalog();
+  } else {
+    if (authDiv) authDiv.style.display = 'block';
+    if (dashDiv) dashDiv.style.display = 'none';
+  }
+}
+
+async function fetchRewardsCatalog() {
+  try {
+    const res = await fetch('/api/rewards');
+    if (res.ok) {
+      state.rewards = await res.json();
+      renderRewardsCatalog();
+    }
+  } catch(e) {}
+}
+
+function renderRewardsCatalog() {
+  const container = document.getElementById('rewards-catalog-list');
+  if (!container) return;
+
+  if (state.rewards.length === 0) {
+    container.innerHTML = `<p style="text-align: center; color: var(--color-muted);">Nenhum prêmio disponível no momento.</p>`;
+    return;
+  }
+
+  const userPts = state.currentUser ? state.currentUser.points : 0;
+
+  container.innerHTML = state.rewards.map(r => {
+    const canAfford = userPts >= r.points;
+    return `
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; box-shadow: var(--shadow-sm);">
+        <div>
+          <h5 style="font-size: 0.95rem; color: var(--color-dark); margin-bottom: 0.2rem;">${r.name}</h5>
+          <p style="font-size: 0.78rem; color: var(--color-muted);">${r.desc || ''}</p>
+          <span style="font-size: 0.8rem; font-weight: 800; color: #dc2626; margin-top: 0.2rem; display: inline-block;">⭐ ${r.points} Pontos</span>
+        </div>
+        <button class="btn btn-sm ${canAfford ? 'btn-primary btn-red' : 'btn-secondary'}" 
+                onclick="redeemRewardItem('${r.id}')" ${canAfford ? '' : 'disabled style="opacity: 0.5;"'}>
+          ${canAfford ? '<i class="fa-solid fa-gift"></i> Resgatar' : 'Faltam Pontos'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function redeemRewardItem(rewardId) {
+  const reward = state.rewards.find(r => r.id === rewardId);
+  if (!reward || !state.currentUser) return;
+
+  if (state.currentUser.points < reward.points) {
+    showToast('Você não possui pontos suficientes para este resgate.', 'warning');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/customers/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: state.currentUser.phone, points: reward.points })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      state.currentUser = data.customer;
+      localStorage.setItem('bcmarmitas_customer', JSON.stringify(state.currentUser));
+      
+      // Apply reward to cart automatically!
+      state.cart.push({
+        id: 'rew_cart_' + Date.now(),
+        type: 'reward',
+        title: `🎁 PRÊMIO: ${reward.name}`,
+        details: 'Resgate de Pontos Fidelidade',
+        price: reward.type === 'discount' ? -reward.value : 0.00,
+        qty: 1
+      });
+
+      updateCartUI();
+      updateLoyaltyUI();
+      closeLoyaltyModal();
+      showToast(`🎉 Você resgatou "${reward.name}"! Item adicionado ao seu pedido.`, 'success');
+    } else {
+      showToast(data.message || 'Erro ao resgatar.', 'warning');
+    }
+  } catch(e) {
+    showToast('Erro de conexão ao resgatar.', 'warning');
+  }
+}
         </div>
 
         <div style="margin-top: 0.6rem; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
