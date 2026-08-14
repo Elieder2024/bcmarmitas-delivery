@@ -1,0 +1,10 @@
+[
+  {
+    "phone": "47999998888",
+    "name": "Cliente Exemplo BC",
+    "email": "cliente@bcmarmitas.com.br",
+    "password": "123",
+    "points": 120,
+    "createdAt": "2026-08-13"
+  }
+]
