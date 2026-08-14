@@ -7,8 +7,9 @@ PORT = int(os.environ.get('PORT', 3001))
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 ORDERS_FILE = os.path.join(DATA_DIR, "orders.json")
 PROTEINS_FILE = os.path.join(DATA_DIR, "proteins.json")
+DRINKS_FILE = os.path.join(DATA_DIR, "drinks.json")
+PRICES_FILE = os.path.join(DATA_DIR, "menu_prices.json")
 
-# Initial mock data if files don't exist
 DEFAULT_ORDERS = [
   {
     "id": "BC-7810",
@@ -27,6 +28,19 @@ DEFAULT_PROTEINS = [
   { "id": "prot_2", "name": "🍗 Frango Grelhado", "desc": "Peito de frango suculento grelhado na chapa com ervas" },
   { "id": "prot_3", "name": "🧀 Frango Empanado", "desc": "Frango empanado crocante à Parmegiana com queijo derretido" }
 ]
+
+DEFAULT_DRINKS = [
+  { "id": "drink_1", "name": "🥤 Coca-Cola Lata 350ml", "price": 5.00 },
+  { "id": "drink_2", "name": "🍋 Guaraná Antarctica 350ml", "price": 5.00 },
+  { "id": "drink_3", "name": "🍊 Suco Del Valle Laranja 300ml", "price": 6.00 },
+  { "id": "drink_4", "name": "💧 Água Mineral sem Gás 500ml", "price": 3.00 }
+]
+
+DEFAULT_PRICES = {
+  "pequena": 11.50,
+  "media": 13.00,
+  "grande": 15.00
+}
 
 def load_json_file(filepath, default_data):
     if not os.path.exists(filepath):
@@ -53,7 +67,7 @@ class DeliveryAppRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def log_message(self, format, *args):
-        pass  # Log silencioso
+        pass
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -74,6 +88,22 @@ class DeliveryAppRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(proteins, ensure_ascii=False).encode('utf-8'))
+            return
+
+        if self.path == '/api/drinks':
+            drinks = load_json_file(DRINKS_FILE, DEFAULT_DRINKS)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(drinks, ensure_ascii=False).encode('utf-8'))
+            return
+
+        if self.path == '/api/menu-prices':
+            prices = load_json_file(PRICES_FILE, DEFAULT_PRICES)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(prices, ensure_ascii=False).encode('utf-8'))
             return
 
         super().do_GET()
@@ -115,16 +145,89 @@ class DeliveryAppRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"status": "ok", "orders": orders}).encode('utf-8'))
             return
 
+        # PROTEINS
         if self.path == '/api/proteins':
             proteins = load_json_file(PROTEINS_FILE, DEFAULT_PROTEINS)
             if isinstance(proteins, list):
-                proteins.append(req_data)
-            save_json_file(PROTEINS_FILE, proteins)
+                # If editing existing protein
+                if req_data.get('id'):
+                    updated = False
+                    for p in proteins:
+                        if p.get('id') == req_data.get('id'):
+                            p['name'] = req_data.get('name', p['name'])
+                            p['desc'] = req_data.get('desc', p['desc'])
+                            updated = True
+                            break
+                    if not updated:
+                        proteins.append(req_data)
+                else:
+                    req_data['id'] = 'prot_' + str(int(os.urandom(4).hex(), 16))
+                    proteins.append(req_data)
 
+            save_json_file(PROTEINS_FILE, proteins)
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
+            self.wfile.write(json.dumps({"status": "ok", "proteins": proteins}).encode('utf-8'))
+            return
+
+        if self.path == '/api/proteins/delete':
+            prot_id = req_data.get('id')
+            proteins = load_json_file(PROTEINS_FILE, DEFAULT_PROTEINS)
+            proteins = [p for p in proteins if p.get('id') != prot_id]
+            save_json_file(PROTEINS_FILE, proteins)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok", "proteins": proteins}).encode('utf-8'))
+            return
+
+        # DRINKS
+        if self.path == '/api/drinks':
+            drinks = load_json_file(DRINKS_FILE, DEFAULT_DRINKS)
+            if req_data.get('id'):
+                updated = False
+                for d in drinks:
+                    if d.get('id') == req_data.get('id'):
+                        d['name'] = req_data.get('name', d['name'])
+                        d['price'] = float(req_data.get('price', d['price']))
+                        updated = True
+                        break
+                if not updated:
+                    drinks.append(req_data)
+            else:
+                req_data['id'] = 'drink_' + str(int(os.urandom(4).hex(), 16))
+                drinks.append(req_data)
+
+            save_json_file(DRINKS_FILE, drinks)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok", "drinks": drinks}).encode('utf-8'))
+            return
+
+        if self.path == '/api/drinks/delete':
+            drink_id = req_data.get('id')
+            drinks = load_json_file(DRINKS_FILE, DEFAULT_DRINKS)
+            drinks = [d for d in drinks if d.get('id') != drink_id]
+            save_json_file(DRINKS_FILE, drinks)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok", "drinks": drinks}).encode('utf-8'))
+            return
+
+        # MENU PRICES
+        if self.path == '/api/menu-prices':
+            prices = load_json_file(PRICES_FILE, DEFAULT_PRICES)
+            if 'pequena' in req_data: prices['pequena'] = float(req_data['pequena'])
+            if 'media' in req_data: prices['media'] = float(req_data['media'])
+            if 'grande' in req_data: prices['grande'] = float(req_data['grande'])
+            save_json_file(PRICES_FILE, prices)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok", "prices": prices}).encode('utf-8'))
             return
 
         self.send_response(404)
@@ -133,6 +236,8 @@ class DeliveryAppRequestHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     load_json_file(ORDERS_FILE, DEFAULT_ORDERS)
     load_json_file(PROTEINS_FILE, DEFAULT_PROTEINS)
+    load_json_file(DRINKS_FILE, DEFAULT_DRINKS)
+    load_json_file(PRICES_FILE, DEFAULT_PRICES)
     os.chdir(DATA_DIR)
     
     with socketserver.TCPServer(("", PORT), DeliveryAppRequestHandler) as httpd:
