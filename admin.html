@@ -152,21 +152,21 @@
               <h4>🍱 Marmita Pequena</h4>
               <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Individual (400g)</p>
               <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
-              <input type="number" step="0.50" id="price-pequena" value="11.50" required />
+              <input type="number" step="0.01" id="price-pequena" value="11.50" required />
             </div>
 
             <div class="price-card">
               <h4>🍱 Marmita Média</h4>
               <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Mais Vendida (600g)</p>
               <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
-              <input type="number" step="0.50" id="price-media" value="13.00" required />
+              <input type="number" step="0.01" id="price-media" value="13.00" required />
             </div>
 
             <div class="price-card">
               <h4>🍱 Marmita Grande</h4>
               <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">Reforçada (800g)</p>
               <label style="font-size: 0.75rem; font-weight: 700;">Preço (R$)</label>
-              <input type="number" step="0.50" id="price-grande" value="15.00" required />
+              <input type="number" step="0.01" id="price-grande" value="15.00" required />
             </div>
           </div>
 
@@ -233,7 +233,7 @@
             </div>
             <div class="form-group" style="flex: 1;">
               <label for="admin-drink-price">Preço (R$)</label>
-              <input type="number" step="0.50" id="admin-drink-price" placeholder="10.00" required />
+              <input type="number" step="0.01" id="admin-drink-price" placeholder="10.00" required />
             </div>
           </div>
           <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
@@ -321,7 +321,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
-      setInterval(loadAdminData, 2000);
+      setInterval(loadAdminData, 20000);
       window.addEventListener('storage', loadAdminData);
     });
 
