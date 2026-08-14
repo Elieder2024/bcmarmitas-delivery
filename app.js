@@ -175,72 +175,82 @@ function setFulfillmentMode(mode) {
 
 // Marmita Builder Modal Logic
 function openMarmitaBuilderModal(key, title, fallbackPrice) {
-  let basePrice = parseFloat(fallbackPrice) || 10.00;
-  if (state.menuPrices && state.menuPrices[key]) {
-    basePrice = parseFloat(state.menuPrices[key]) || basePrice;
-  }
+  try {
+    let basePrice = parseFloat(fallbackPrice) || 10.00;
+    if (state.menuPrices && state.menuPrices[key]) {
+      basePrice = parseFloat(state.menuPrices[key]) || basePrice;
+    }
 
-  state.activeBuilderSize = { key, title, basePrice };
+    state.activeBuilderSize = { key, title, basePrice };
 
-  const titleEl = document.getElementById('builder-modal-title');
-  const priceEl = document.getElementById('builder-modal-price');
-  if (titleEl) titleEl.innerText = `Montar ${title}`;
-  if (priceEl) priceEl.innerText = `Valor Base: R$ ${basePrice.toFixed(2).replace('.', ',')}`;
+    const titleEl = document.getElementById('builder-modal-title');
+    const priceEl = document.getElementById('builder-modal-price');
+    if (titleEl) titleEl.innerText = `Montar ${title}`;
+    if (priceEl) priceEl.innerText = `Valor Base: R$ ${basePrice.toFixed(2).replace('.', ',')}`;
 
-  // Populate proteins dynamically
-  const protContainer = document.getElementById('protein-options-container');
-  if (protContainer && state.kitchenProteins && state.kitchenProteins.length) {
-    protContainer.innerHTML = state.kitchenProteins.map((p, idx) => `
-      <label class="radio-option">
-        <input type="radio" name="marmita-protein" value="${p.name}" ${idx === 0 ? 'checked' : ''} />
-        <div class="radio-content">
-          <strong>${p.name}</strong>
-          <small>${p.desc}</small>
-        </div>
-      </label>
-    `).join('');
-  }
-
-  // Populate drinks dynamically inside builder
-  const drinkContainer = document.getElementById('drink-selection-container');
-  if (drinkContainer && state.drinks) {
-    const noDrinkHtml = `
-      <label class="radio-option">
-        <input type="radio" name="marmita-drink" value="sem_bebida" data-price="0.00" onchange="calcBuilderTotal()" checked />
-        <div class="radio-content">
-          <strong>❌ Sem Bebida</strong>
-          <small>Apenas a marmita caprichada</small>
-        </div>
-      </label>
-    `;
-    const drinksHtml = state.drinks.map(d => {
-      const pNum = parseFloat(d.price) || 0;
-      return `
+    // Populate proteins dynamically
+    const protContainer = document.getElementById('protein-options-container');
+    if (protContainer && state.kitchenProteins && state.kitchenProteins.length) {
+      protContainer.innerHTML = state.kitchenProteins.map((p, idx) => `
         <label class="radio-option">
-          <input type="radio" name="marmita-drink" value="${d.name}" data-price="${pNum}" onchange="calcBuilderTotal()" />
+          <input type="radio" name="marmita-protein" value="${p.name}" ${idx === 0 ? 'checked' : ''} />
           <div class="radio-content">
-            <strong>${d.icon || '🥤'} ${d.name} (+ R$ ${pNum.toFixed(2).replace('.', ',')})</strong>
-            <small>Geladinha</small>
+            <strong>${p.name}</strong>
+            <small>${p.desc}</small>
+          </div>
+        </label>
+      `).join('');
+    }
+
+    // Populate drinks dynamically inside builder
+    const drinkContainer = document.getElementById('drink-selection-container');
+    if (drinkContainer && state.drinks) {
+      const noDrinkHtml = `
+        <label class="radio-option">
+          <input type="radio" name="marmita-drink" value="sem_bebida" data-price="0.00" onchange="calcBuilderTotal()" checked />
+          <div class="radio-content">
+            <strong>❌ Sem Bebida</strong>
+            <small>Apenas a marmita caprichada</small>
           </div>
         </label>
       `;
-    }).join('');
-    drinkContainer.innerHTML = noDrinkHtml + drinksHtml;
+      const drinksHtml = state.drinks.map(d => {
+        const pNum = parseFloat(d.price) || 0;
+        return `
+          <label class="radio-option">
+            <input type="radio" name="marmita-drink" value="${d.name}" data-price="${pNum}" onchange="calcBuilderTotal()" />
+            <div class="radio-content">
+              <strong>${d.icon || '🥤'} ${d.name} (+ R$ ${pNum.toFixed(2).replace('.', ',')})</strong>
+              <small>Geladinha</small>
+            </div>
+          </label>
+        `;
+      }).join('');
+      drinkContainer.innerHTML = noDrinkHtml + drinksHtml;
+    }
+
+    // Reset notes
+    const notesEl = document.getElementById('marmita-notes');
+    if (notesEl) notesEl.value = '';
+
+    calcBuilderTotal();
+  } catch(e) {
+    console.error('Erro ao abrir builder:', e);
   }
 
-  // Reset notes
-  const notesEl = document.getElementById('marmita-notes');
-  if (notesEl) notesEl.value = '';
-
-  calcBuilderTotal();
-
   const modal = document.getElementById('modal-marmita-builder');
-  if (modal) modal.classList.add('active');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
 }
 
 function closeMarmitaBuilderModal() {
   const modal = document.getElementById('modal-marmita-builder');
-  if (modal) modal.classList.remove('active');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
 }
 
 function calcBuilderTotal() {
