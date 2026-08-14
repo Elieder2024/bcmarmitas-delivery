@@ -1,0 +1,62 @@
+[
+  {
+    "id": "BC-2484",
+    "clientName": "Cliente BC",
+    "address": "dsadasdasdsadsa, Bairro: Centro (Balneário Camboriú)",
+    "items": "1x Marmita Média (Bife de Carne na Chapa) | 1x Marmita Pequena (Bife de Carne na Chapa)",
+    "total": 26,
+    "paymentMethod": "PIX / Cartão",
+    "status": "ENTREGUE",
+    "date": "Hoje, 21:22"
+  },
+  {
+    "id": "BC-9181",
+    "clientName": "Cliente BC",
+    "address": "dsadasdasdsadsa, Bairro: Centro (Balneário Camboriú)",
+    "items": "1x Marmita Média (Bife de Carne na Chapa)",
+    "total": 16,
+    "paymentMethod": "PIX / Cartão",
+    "status": "ENTREGUE",
+    "date": "Hoje, 21:22"
+  },
+  {
+    "id": "BC-3373",
+    "clientName": "Cliente BC",
+    "address": "dsadasdasdsadsa, Bairro: Centro (Balneário Camboriú)",
+    "items": "1x Marmita Média (Bife de Carne na Chapa)",
+    "total": 16,
+    "paymentMethod": "PIX / Cartão",
+    "status": "ENTREGUE",
+    "date": "Hoje, 21:22"
+  },
+  {
+    "id": "BC-4466",
+    "clientName": "Cliente BC",
+    "address": "dsadasdasdsadsa, Bairro: Centro (Balneário Camboriú)",
+    "items": "1x Marmita Média (Bife de Carne na Chapa)",
+    "total": 16,
+    "paymentMethod": "PIX / Cartão",
+    "status": "EM_PREPARO",
+    "date": "Hoje, 21:22"
+  },
+  {
+    "id": "BC-7762",
+    "clientName": "Cliente BC",
+    "address": "dsadasdasdsadsa, Bairro: Centro (Balneário Camboriú)",
+    "items": "1x Coca-Cola Zero Lata 350ml",
+    "total": 8,
+    "paymentMethod": "PIX / Cartão",
+    "status": "ENTREGUE",
+    "date": "Hoje, 21:04"
+  },
+  {
+    "id": "BC-7810",
+    "clientName": "Cliente Centro BC",
+    "address": "Av. Brasil, 1500 - Apto 402, Centro (Balneário Camboriú)",
+    "items": "1x Marmita Média (Bife de Carne na Chapa) | Bebida: Coca-Cola Lata 350ml",
+    "total": 18.0,
+    "paymentMethod": "PIX",
+    "status": "EM_PREPARO",
+    "date": "Hoje, 12:15"
+  }
+]
