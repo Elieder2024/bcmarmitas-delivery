@@ -348,7 +348,7 @@
   </div>
 
   <!-- MODAL: LOGIN DO DONO SEPARADO -->
-  <div class="modal-overlay active" id="modal-admin-login" style="display: flex;">
+  <div class="modal-overlay" id="modal-admin-login">
     <div class="modal-content" style="max-width: 420px;">
       <div class="modal-header bg-dark">
         <h3><i class="fa-solid fa-lock text-red"></i> Login do Dono - BC Marmitas</h3>
@@ -413,10 +413,16 @@
       const isAuth = sessionStorage.getItem('bc_owner_auth') === 'true';
       const loginModal = document.getElementById('modal-admin-login');
       if (isAuth) {
-        if (loginModal) loginModal.style.display = 'none';
+        if (loginModal) {
+          loginModal.classList.remove('active');
+          loginModal.style.display = 'none';
+        }
         loadAdminData();
       } else {
-        if (loginModal) loginModal.style.display = 'flex';
+        if (loginModal) {
+          loginModal.classList.add('active');
+          loginModal.style.display = 'flex';
+        }
       }
     }
 
