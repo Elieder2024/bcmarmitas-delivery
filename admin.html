@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>PAINEL DO DONO - BC Marmitas (Cozinha)</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="styles.css?v=1.3" />
+  <style>
+    body {
+      background: #0f172a;
+      padding: 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .admin-full-container {
+      width: 100%;
+      max-width: 1000px;
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+    }
+    .admin-top-bar {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: #ffffff;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .admin-top-bar h1 {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN / KITCHEN CONTAINER -->
+  <div class="admin-full-container" id="admin-main-wrapper">
+    
+    <!-- HEADER DA COZINHA DO DONO -->
+    <header class="admin-top-bar">
+      <h1><i class="fa-solid fa-kitchen-set"></i> PAINEL DA COZINHA - BC MARMITAS</h1>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.82rem; background: rgba(255,255,255,0.2); padding: 0.35rem 0.75rem; border-radius: 20px;" id="owner-logged-text">Dono: dono@bcmarmitas.com.br</span>
+        <button class="btn btn-secondary btn-sm" onclick="handleOwnerLogoutPage()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+      </div>
+    </header>
+
+    <!-- ADMIN TABS NAVIGATION -->
+    <div class="partner-tabs" style="padding: 1rem 1.75rem;">
+      <button type="button" class="partner-tab-btn active" id="btn-tab-orders" onclick="switchAdminPageTab('orders', this)">
+        <i class="fa-solid fa-bell"></i> Pedidos na Cozinha <span class="badge-pending-count" id="admin-orders-badge">0</span>
+      </button>
+      <button type="button" class="partner-tab-btn" id="btn-tab-menu" onclick="switchAdminPageTab('menu', this)">
+        <i class="fa-solid fa-drumstick-bite"></i> Opções de Carnes do Dia
+      </button>
+      <a href="index.html" target="_blank" class="partner-tab-btn" style="text-decoration: none; margin-left: auto; background: #e2e8f0; color: #1e293b;">
+        <i class="fa-solid fa-store"></i> Ver Site do Cliente <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i>
+      </a>
+    </div>
+
+    <!-- ADMIN BODY CONTENT -->
+    <div style="padding: 1.75rem;">
+      
+      <!-- TAB 1: PEDIDOS CHEGANDO NA COZINHA -->
+      <div class="partner-tab-pane active" id="pane-admin-orders">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark);">Pedidos em Tempo Real</h3>
+            <p style="font-size: 0.8rem; color: var(--color-muted);">Acompanhe e avance os pedidos da chapa para entrega em Balneário Camboriú</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="renderAdminPageOrders()"><i class="fa-solid fa-rotate"></i> Atualizar Pedidos</button>
+        </div>
+
+        <div class="orders-table-wrapper">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>ID / Hora</th>
+                <th>Cliente / Endereço (BC)</th>
+                <th>Marmita & Detalhes</th>
+                <th>Total</th>
+                <th>Status Atual</th>
+                <th>Ação do Dono</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-table-body">
+              <!-- JS Rendered Orders -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: GERENCIAR CARNES DO DIA -->
+      <div class="partner-tab-pane" id="pane-admin-menu">
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); margin-bottom: 0.5rem;">Carnes e Proteínas do Cardápio</h3>
+        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Cadastre ou remova as opções de carnes oferecidas aos clientes no aplicativo.</p>
+
+        <form onsubmit="handleAdminPageAddProtein(event)" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="admin-prot-name">Nome da Carne / Opção</label>
+              <input type="text" id="admin-prot-name" placeholder="Ex: Peixe Grelhado ao Molho de Alcaparras" required />
+            </div>
+            <div class="form-group">
+              <label for="admin-prot-desc">Descrição / Detalhe</label>
+              <input type="text" id="admin-prot-desc" placeholder="Ex: Filé fresco grelhado na manteiga e alcaparras" required />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-red margin-top-sm">
+            <i class="fa-solid fa-plus"></i> Cadastrar Nova Carne no Cardápio
+          </button>
+        </form>
+
+        <div class="orders-table-wrapper">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>Opção de Carne</th>
+                <th>Descrição</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="admin-proteins-table-body">
+              <!-- JS Rendered Proteins -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: LOGIN DO DONO SEPARADO -->
+  <div class="modal-overlay active" id="modal-admin-login" style="display: flex;">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header bg-dark">
+        <h3><i class="fa-solid fa-lock text-red"></i> Login do Dono - BC Marmitas</h3>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <p style="font-size: 0.85rem; color: var(--color-muted); margin-bottom: 1.25rem;">
+          Digite seu e-mail e senha de proprietário para acessar o painel de controle da cozinha.
+        </p>
+
+        <form onsubmit="handleAdminPageLogin(event)">
+          <div class="form-group">
+            <label for="login-owner-email">E-mail do Dono</label>
+            <input type="email" id="login-owner-email" value="dono@bcmarmitas.com.br" placeholder="dono@bcmarmitas.com.br" required />
+          </div>
+
+          <div class="form-group margin-top-sm">
+            <label for="login-owner-password">Senha de Acesso</label>
+            <input type="password" id="login-owner-password" value="123" placeholder="Digite a senha..." required />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-red btn-full margin-top-md">
+            <i class="fa-solid fa-right-to-bracket"></i> Entrar no Painel da Cozinha
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-full margin-top-sm" style="font-size: 0.78rem;" onclick="fillAdminCredentialsFast()">
+            ⚡ Preenchimento Rápido de Teste
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JS DO PAINEL DO DONO -->
+  <script>
+    const OWNER_CREDENTIALS = {
+      email: 'dono@bcmarmitas.com.br',
+      password: '123'
+    };
+
+    let adminState = {
+      orders: [],
+      proteins: [
+        { id: 'prot_1', name: '🥩 Bife de Carne na Chapa', desc: 'Carne macia grelhada na hora com tempero da casa' },
+        { id: 'prot_2', name: '🍗 Frango Grelhado', desc: 'Peito de frango suculento grelhado na chapa com ervas' },
+        { id: 'prot_3', name: '🧀 Frango Empanado', desc: 'Frango empanado crocante à Parmegiana com queijo derretido' }
+      ]
+    };
+
+    let lastOrdersCount = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAdminAuth();
+      // Polling automático a cada 2 segundos e escuta de eventos
+      setInterval(loadAdminData, 2000);
+      window.addEventListener('storage', loadAdminData);
+    });
+
+    function checkAdminAuth() {
+      const isAuth = sessionStorage.getItem('bc_owner_auth') === 'true';
+      const loginModal = document.getElementById('modal-admin-login');
+      if (isAuth) {
+        if (loginModal) loginModal.style.display = 'none';
+        loadAdminData();
+      } else {
+        if (loginModal) loginModal.style.display = 'flex';
+      }
+    }
+
+    function handleAdminPageLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-owner-email').value.trim().toLowerCase();
+      const pass = document.getElementById('login-owner-password').value.trim();
+
+      if (email === OWNER_CREDENTIALS.email && pass === OWNER_CREDENTIALS.password) {
+        sessionStorage.setItem('bc_owner_auth', 'true');
+        showToast('Login realizado com sucesso! Bem-vindo.', 'success');
+        checkAdminAuth();
+      } else {
+        showToast('E-mail ou senha incorretos!', 'warning');
+      }
+    }
+
+    function fillAdminCredentialsFast() {
+      document.getElementById('login-owner-email').value = OWNER_CREDENTIALS.email;
+      document.getElementById('login-owner-password').value = OWNER_CREDENTIALS.password;
+    }
+
+    function handleOwnerLogoutPage() {
+      sessionStorage.removeItem('bc_owner_auth');
+      location.reload();
+    }
+
+    async function loadAdminData() {
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const parsed = await res.json();
+          if (parsed.length > lastOrdersCount && lastOrdersCount !== 0) {
+            showToast(`🔔 NOVO PEDIDO CHEGOU NA COZINHA! (${parsed[0].id})`, 'success');
+          }
+          lastOrdersCount = parsed.length;
+          adminState.orders = parsed;
+        }
+      } catch(e) {
+        const savedOrders = localStorage.getItem('bcmarmitas_orders');
+        if (savedOrders) adminState.orders = JSON.parse(savedOrders);
+      }
+
+      try {
+        const resP = await fetch('/api/proteins');
+        if (resP.ok) {
+          adminState.proteins = await resP.json();
+        }
+      } catch(e) {}
+
+      renderAdminPageOrdersUI();
+      renderAdminPageProteins();
+    }
+
+    function saveAdminData() {
+      try {
+        localStorage.setItem('bcmarmitas_orders', JSON.stringify(adminState.orders));
+        localStorage.setItem('bcmarmitas_proteins', JSON.stringify(adminState.proteins));
+      } catch(e) {}
+    }
+
+    function renderAdminPageOrdersUI() {
+      const body = document.getElementById('admin-orders-table-body');
+      const badge = document.getElementById('admin-orders-badge');
+      if (!body) return;
+
+      if (badge) badge.innerText = adminState.orders.length;
+
+      if (adminState.orders.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-muted); padding: 2rem;">Nenhum pedido recebido na cozinha ainda.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = adminState.orders.map(o => `
+        <tr>
+          <td><strong>${o.id}</strong><br/><small style="color: var(--color-muted);">${o.date}</small></td>
+          <td><strong>${o.clientName}</strong><br/><small>${o.address}</small></td>
+          <td>${o.items}</td>
+          <td><strong class="text-red">R$ ${o.total.toFixed(2).replace('.', ',')}</strong></td>
+          <td>
+            <span class="status-pill ${o.status === 'ENTREGUE' ? 'status-delivered' : 'status-pending'}">
+              ${o.status === 'EM_PREPARO' ? '🍳 No Fogão' : (o.status === 'SAIU_ENTREGA' ? '🛵 Saiu p/ Entrega' : '✅ Entregue')}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="advanceAdminOrder('${o.id}')">
+              <i class="fa-solid fa-angles-right"></i> Avançar Status
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdminPageOrders() {
+      loadAdminData();
+    }
+
+    async function advanceAdminOrder(orderId) {
+      const order = adminState.orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      let newStatus = order.status;
+      if (order.status === 'EM_PREPARO') {
+        newStatus = 'SAIU_ENTREGA';
+        showToast(`Pedido ${order.id} saiu para entrega! 🛵`, 'info');
+      } else if (order.status === 'SAIU_ENTREGA') {
+        newStatus = 'ENTREGUE';
+        showToast(`Pedido ${order.id} foi entregue com sucesso! 🎉`, 'success');
+      } else {
+        showToast(`Pedido ${order.id} já foi finalizado.`, 'info');
+        return;
+      }
+
+      order.status = newStatus;
+
+      try {
+        await fetch('/api/orders/update-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: orderId, status: newStatus })
+        });
+      } catch(e) {}
+
+      saveAdminData();
+      renderAdminPageOrdersUI();
+    }
+
+    function renderAdminPageProteins() {
+      const body = document.getElementById('admin-proteins-table-body');
+      if (!body) return;
+
+      body.innerHTML = adminState.proteins.map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.desc}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="deleteAdminProtein('${p.id}')">
+              <i class="fa-solid fa-trash text-red"></i> Excluir
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleAdminPageAddProtein(e) {
+      e.preventDefault();
+      const name = document.getElementById('admin-prot-name').value.trim();
+      const desc = document.getElementById('admin-prot-desc').value.trim();
+
+      adminState.proteins.push({
+        id: 'prot_' + Date.now(),
+        name: name,
+        desc: desc
+      });
+
+      saveAdminData();
+      renderAdminPageProteins();
+      e.target.reset();
+      showToast(`Nova opção "${name}" adicionada ao cardápio!`, 'success');
+    }
+
+    function deleteAdminProtein(id) {
+      if (!confirm('Deseja excluir esta opção de carne do cardápio?')) return;
+      adminState.proteins = adminState.proteins.filter(p => p.id !== id);
+      saveAdminData();
+      renderAdminPageProteins();
+      showToast('Opção removida.', 'info');
+    }
+
+    function switchAdminPageTab(tabName, btn) {
+      document.querySelectorAll('.partner-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.partner-tab-pane').forEach(p => p.classList.remove('active'));
+
+      if (btn) btn.classList.add('active');
+
+      if (tabName === 'orders') {
+        document.getElementById('pane-admin-orders').classList.add('active');
+      } else {
+        document.getElementById('pane-admin-menu').classList.add('active');
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 3500);
+    }
+  </script>
+</body>
+</html>
