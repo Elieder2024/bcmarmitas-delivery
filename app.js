@@ -81,6 +81,7 @@ async function loadStateFromStorage() {
     const resPr = await fetch('/api/menu-prices');
     if (resPr.ok) {
       const prs = await resPr.json();
+      state.menuPrices = prs;
       updateDynamicCardPrices(prs);
     }
   } catch(e) {}
@@ -94,9 +95,9 @@ function updateDynamicCardPrices(prs) {
   const mCard = document.querySelector('.marmita-card[onclick*="media"] .marmita-price');
   const gCard = document.querySelector('.marmita-card[onclick*="grande"] .marmita-price');
 
-  if (pCard && prs.pequena) pCard.innerText = `R$ ${prs.pequena.toFixed(2).replace('.', ',')}`;
-  if (mCard && prs.media) mCard.innerText = `R$ ${prs.media.toFixed(2).replace('.', ',')}`;
-  if (gCard && prs.grande) gCard.innerText = `R$ ${prs.grande.toFixed(2).replace('.', ',')}`;
+  if (pCard && prs.pequena) pCard.innerText = `R$ ${(parseFloat(prs.pequena) || 0).toFixed(2).replace('.', ',')}`;
+  if (mCard && prs.media) mCard.innerText = `R$ ${(parseFloat(prs.media) || 0).toFixed(2).replace('.', ',')}`;
+  if (gCard && prs.grande) gCard.innerText = `R$ ${(parseFloat(prs.grande) || 0).toFixed(2).replace('.', ',')}`;
 }
 
 // DOM Initialization
@@ -173,7 +174,12 @@ function setFulfillmentMode(mode) {
 }
 
 // Marmita Builder Modal Logic
-function openMarmitaBuilderModal(key, title, basePrice) {
+function openMarmitaBuilderModal(key, title, fallbackPrice) {
+  let basePrice = parseFloat(fallbackPrice) || 10.00;
+  if (state.menuPrices && state.menuPrices[key]) {
+    basePrice = parseFloat(state.menuPrices[key]) || basePrice;
+  }
+
   state.activeBuilderSize = { key, title, basePrice };
 
   const titleEl = document.getElementById('builder-modal-title');
@@ -183,7 +189,7 @@ function openMarmitaBuilderModal(key, title, basePrice) {
 
   // Populate proteins dynamically
   const protContainer = document.getElementById('protein-options-container');
-  if (protContainer && state.kitchenProteins.length) {
+  if (protContainer && state.kitchenProteins && state.kitchenProteins.length) {
     protContainer.innerHTML = state.kitchenProteins.map((p, idx) => `
       <label class="radio-option">
         <input type="radio" name="marmita-protein" value="${p.name}" ${idx === 0 ? 'checked' : ''} />
@@ -197,7 +203,7 @@ function openMarmitaBuilderModal(key, title, basePrice) {
 
   // Populate drinks dynamically inside builder
   const drinkContainer = document.getElementById('drink-selection-container');
-  if (drinkContainer) {
+  if (drinkContainer && state.drinks) {
     const noDrinkHtml = `
       <label class="radio-option">
         <input type="radio" name="marmita-drink" value="sem_bebida" data-price="0.00" onchange="calcBuilderTotal()" checked />
@@ -207,15 +213,18 @@ function openMarmitaBuilderModal(key, title, basePrice) {
         </div>
       </label>
     `;
-    const drinksHtml = state.drinks.map(d => `
-      <label class="radio-option">
-        <input type="radio" name="marmita-drink" value="${d.name}" data-price="${d.price}" onchange="calcBuilderTotal()" />
-        <div class="radio-content">
-          <strong>${d.icon || '🥤'} ${d.name} (+ R$ ${d.price.toFixed(2).replace('.', ',')})</strong>
-          <small>Geladinha</small>
-        </div>
-      </label>
-    `).join('');
+    const drinksHtml = state.drinks.map(d => {
+      const pNum = parseFloat(d.price) || 0;
+      return `
+        <label class="radio-option">
+          <input type="radio" name="marmita-drink" value="${d.name}" data-price="${pNum}" onchange="calcBuilderTotal()" />
+          <div class="radio-content">
+            <strong>${d.icon || '🥤'} ${d.name} (+ R$ ${pNum.toFixed(2).replace('.', ',')})</strong>
+            <small>Geladinha</small>
+          </div>
+        </label>
+      `;
+    }).join('');
     drinkContainer.innerHTML = noDrinkHtml + drinksHtml;
   }
 
