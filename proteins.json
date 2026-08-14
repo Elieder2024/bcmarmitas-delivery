@@ -1,0 +1,17 @@
+[
+  {
+    "id": "prot_1",
+    "name": "🥩 Bife de Carne na Chapa",
+    "desc": "Carne macia grelhada na hora com tempero da casa"
+  },
+  {
+    "id": "prot_2",
+    "name": "🍗 Frango Grelhado",
+    "desc": "Peito de frango suculento grelhado na chapa com ervas"
+  },
+  {
+    "id": "prot_3",
+    "name": "🧀 Frango Empanado",
+    "desc": "Frango empanado crocante à Parmegiana com queijo derretido"
+  }
+]
