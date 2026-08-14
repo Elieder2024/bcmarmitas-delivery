@@ -56,6 +56,27 @@ async function loadStateFromStorage() {
     const res = await fetch('/api/orders');
     if (res.ok) {
       const orders = await res.json();
+      
+      // Detect order status updates for customer audio alerts
+      if (state.lastStatusMap && state.currentUser) {
+        orders.forEach(o => {
+          if (o.clientPhone === state.currentUser.phone) {
+            const prev = state.lastStatusMap[o.id];
+            if (prev && prev !== o.status) {
+              if (o.status === 'SAIU_ENTREGA') {
+                showToast(`🛵 Seu pedido ${o.id} SAIU PARA ENTREGA!`, 'info');
+                playNotificationSound('status');
+              } else if (o.status === 'ENTREGUE') {
+                showToast(`🎉 Seu pedido ${o.id} FOI ENTREGUE! Bom apetite!`, 'success');
+                playNotificationSound('status');
+              }
+            }
+          }
+        });
+      }
+
+      state.lastStatusMap = {};
+      orders.forEach(o => { state.lastStatusMap[o.id] = o.status; });
       state.orders = orders;
     }
   } catch (e) {}
@@ -532,7 +553,32 @@ async function confirmPaymentAndSendToKitchen() {
   document.getElementById('cart-footer-actions').style.display = 'flex';
 
   openMyOrdersModal();
+  playNotificationSound('status');
   showToast('Pedido enviado para a cozinha! Acompanhe o preparo ao vivo.', 'success');
+}
+
+function playNotificationSound(type = 'status') {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, now); // D5
+    osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.2); // A5
+
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  } catch(e) {}
 }
 
 const OWNER_CREDENTIALS = {
