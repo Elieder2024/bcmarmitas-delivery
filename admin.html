@@ -104,6 +104,9 @@
       <button type="button" class="partner-tab-btn" id="btn-tab-drinks" onclick="switchAdminPageTab('drinks', this)">
         <i class="fa-solid fa-bottle-water"></i> Bebidas e Refris
       </button>
+      <button type="button" class="partner-tab-btn" id="btn-tab-loyalty" onclick="switchAdminPageTab('loyalty', this)">
+        <i class="fa-solid fa-crown text-red"></i> Clientes & Pontos
+      </button>
       <a href="index.html" target="_blank" class="partner-tab-btn" style="text-decoration: none; margin-left: auto; background: #e2e8f0; color: #1e293b;">
         <i class="fa-solid fa-store"></i> Ver Site do Cliente <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i>
       </a>
@@ -262,6 +265,82 @@
         </div>
       </div>
 
+      <!-- TAB 5: GERENCIAR CLIENTES E PONTOS FIDELIDADE -->
+      <div class="partner-tab-pane" id="pane-admin-loyalty">
+        <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-dark); margin-bottom: 0.5rem;">👑 Clube Fidelidade - Clientes e Prêmios</h3>
+        <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.25rem;">Acompanhe o saldo dos clientes e configure a quantidade de pontos exigidos em cada prêmio.</p>
+
+        <!-- SUB-SEÇÃO 1: PRÊMIOS E PONTOS DE RESGATE -->
+        <div style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2rem;">
+          <h4 style="font-size: 1rem; color: var(--color-dark); margin-bottom: 0.75rem;"><i class="fa-solid fa-gift text-red"></i> Configurar Produtos e Pontos de Resgate</h4>
+          <p style="font-size: 0.78rem; color: var(--color-muted); margin-bottom: 1rem;">Altere os pontos necessários para o cliente resgatar cada prêmio:</p>
+
+          <form onsubmit="handleAdminAddReward(event)">
+            <input type="hidden" id="admin-reward-id" value="" />
+            <div class="form-row">
+              <div class="form-group" style="flex: 2;">
+                <label for="admin-reward-name">Nome do Prêmio / Produto</label>
+                <input type="text" id="admin-reward-name" placeholder="Ex: 🥤 Refrigerante Lata Grátis" required />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label for="admin-reward-points">Pontos Necessários</label>
+                <input type="number" id="admin-reward-points" placeholder="50" min="1" required />
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label for="admin-reward-value">Valor Equivalente (R$)</label>
+                <input type="number" step="0.01" id="admin-reward-value" placeholder="5.00" required />
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+              <button type="submit" class="btn btn-primary btn-red" id="btn-save-reward">
+                <i class="fa-solid fa-plus"></i> Salvar Prêmio no Catálogo
+              </button>
+              <button type="button" class="btn btn-secondary" id="btn-cancel-reward" onclick="cancelEditReward()" style="display: none;">
+                Cancelar Edição
+              </button>
+            </div>
+          </form>
+
+          <div class="orders-table-wrapper margin-top-md">
+            <table class="admin-orders-table">
+              <thead>
+                <tr>
+                  <th>Prêmio</th>
+                  <th>Pontos Necessários</th>
+                  <th>Valor R$</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-rewards-table-body">
+                <!-- JS Rendered Rewards -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB-SEÇÃO 2: CLIENTES CADASTRADOS -->
+        <div>
+          <h4 style="font-size: 1rem; color: var(--color-dark); margin-bottom: 0.75rem;"><i class="fa-solid fa-users"></i> Clientes Cadastrados e Saldo de Pontos</h4>
+          <div class="orders-table-wrapper">
+            <table class="admin-orders-table">
+              <thead>
+                <tr>
+                  <th>Nome do Cliente</th>
+                  <th>WhatsApp / Telefone</th>
+                  <th>E-mail</th>
+                  <th>Saldo Atual de Pontos</th>
+                  <th>Ação (Alterar Pontos)</th>
+                </tr>
+              </thead>
+              <tbody id="admin-customers-table-body">
+                <!-- JS Rendered Customers -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
@@ -314,7 +393,9 @@
       orders: [],
       proteins: [],
       drinks: [],
-      prices: { pequena: 11.50, media: 13.00, grande: 15.00 }
+      prices: { pequena: 11.50, media: 13.00, grande: 15.00 },
+      customers: [],
+      rewards: []
     };
 
     let lastOrdersCount = 0;
@@ -400,9 +481,23 @@
         }
       } catch(e) {}
 
+      // Customers
+      try {
+        const resC = await fetch('/api/customers/list');
+        if (resC.ok) adminState.customers = await resC.json();
+      } catch(e) {}
+
+      // Rewards
+      try {
+        const resR = await fetch('/api/rewards');
+        if (resR.ok) adminState.rewards = await resR.json();
+      } catch(e) {}
+
       renderAdminPageOrdersUI();
       renderAdminPageProteins();
       renderAdminPageDrinks();
+      renderAdminPageCustomers();
+      renderAdminPageRewards();
     }
 
     function renderAdminPageOrdersUI() {
@@ -661,6 +756,147 @@
       } catch(e) {}
     }
 
+    // --- CLUBE FIDELIDADE (CLIENTES E RECOMPENSAS) ---
+    function renderAdminPageCustomers() {
+      const body = document.getElementById('admin-customers-table-body');
+      if (!body) return;
+
+      if (adminState.customers.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-muted); padding: 1.5rem;">Nenhum cliente cadastrado no Clube Fidelidade ainda.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = adminState.customers.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td><i class="fa-brands fa-whatsapp text-emerald"></i> ${c.phone}</td>
+          <td><small style="color: var(--color-muted);">${c.email || 'Não informado'}</small></td>
+          <td><strong style="color: #dc2626; font-size: 1.1rem;">⭐ ${c.points || 0} Pontos</strong></td>
+          <td>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <input type="number" id="cust-pts-${c.phone}" value="${c.points || 0}" style="width: 80px; padding: 0.35rem; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px;" />
+              <button class="btn btn-secondary btn-sm" onclick="saveAdminCustomerPoints('${c.phone}')">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Pontos
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function saveAdminCustomerPoints(phone) {
+      const inputEl = document.getElementById(`cust-pts-${phone}`);
+      if (!inputEl) return;
+      const newPts = parseInt(inputEl.value) || 0;
+
+      try {
+        const res = await fetch('/api/customers/update-points', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, points: newPts })
+        });
+        if (res.ok) {
+          const cust = adminState.customers.find(c => c.phone === phone);
+          if (cust) cust.points = newPts;
+          showToast('Saldo de pontos atualizado!', 'success');
+        }
+      } catch(e) {
+        showToast('Erro ao atualizar pontos.', 'warning');
+      }
+    }
+
+    function renderAdminPageRewards() {
+      const body = document.getElementById('admin-rewards-table-body');
+      if (!body) return;
+
+      if (adminState.rewards.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--color-muted); padding: 1.5rem;">Nenhum prêmio cadastrado.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = adminState.rewards.map(r => `
+        <tr>
+          <td><strong>${r.name}</strong></td>
+          <td><strong style="color: #dc2626;">⭐ ${r.points} Pontos</strong></td>
+          <td>R$ ${(r.value || 0).toFixed(2).replace('.', ',')}</td>
+          <td>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn btn-secondary btn-sm" onclick="editAdminReward('${r.id}')">
+                <i class="fa-solid fa-pen"></i> Editar
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="deleteAdminReward('${r.id}')">
+                <i class="fa-solid fa-trash text-red"></i> Excluir
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleAdminAddReward(e) {
+      e.preventDefault();
+      const id = document.getElementById('admin-reward-id').value;
+      const name = document.getElementById('admin-reward-name').value.trim();
+      const points = parseInt(document.getElementById('admin-reward-points').value);
+      const value = parseFloat(document.getElementById('admin-reward-value').value);
+
+      const payload = { id: id || undefined, name, points, value };
+
+      try {
+        const res = await fetch('/api/rewards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.rewards = data.rewards;
+          cancelEditReward();
+          renderAdminPageRewards();
+          showToast(id ? 'Pontos do prêmio atualizados!' : `Novo prêmio "${name}" cadastrado!`, 'success');
+        }
+      } catch(e) {
+        showToast('Erro ao salvar prêmio.', 'warning');
+      }
+    }
+
+    function editAdminReward(id) {
+      const r = adminState.rewards.find(x => x.id === id);
+      if (!r) return;
+      document.getElementById('admin-reward-id').value = r.id;
+      document.getElementById('admin-reward-name').value = r.name;
+      document.getElementById('admin-reward-points').value = r.points;
+      document.getElementById('admin-reward-value').value = r.value || 0;
+      document.getElementById('btn-save-reward').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+      document.getElementById('btn-cancel-reward').style.display = 'inline-block';
+    }
+
+    function cancelEditReward() {
+      document.getElementById('admin-reward-id').value = '';
+      document.getElementById('admin-reward-name').value = '';
+      document.getElementById('admin-reward-points').value = '';
+      document.getElementById('admin-reward-value').value = '';
+      document.getElementById('btn-save-reward').innerHTML = '<i class="fa-solid fa-plus"></i> Salvar Prêmio no Catálogo';
+      document.getElementById('btn-cancel-reward').style.display = 'none';
+    }
+
+    async function deleteAdminReward(id) {
+      if (!confirm('Deseja excluir este prêmio do catálogo?')) return;
+      try {
+        const res = await fetch('/api/rewards/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          adminState.rewards = data.rewards;
+          renderAdminPageRewards();
+          showToast('Prêmio removido.', 'info');
+        }
+      } catch(e) {}
+    }
+
     // --- TAB SWITCHING ---
     function switchAdminPageTab(tabName, btn) {
       document.querySelectorAll('.partner-tab-btn').forEach(b => b.classList.remove('active'));
@@ -676,6 +912,8 @@
         document.getElementById('pane-admin-menu').classList.add('active');
       } else if (tabName === 'drinks') {
         document.getElementById('pane-admin-drinks').classList.add('active');
+      } else if (tabName === 'loyalty') {
+        document.getElementById('pane-admin-loyalty').classList.add('active');
       }
     }
 
