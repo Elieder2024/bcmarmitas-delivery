@@ -582,7 +582,7 @@ body {
 
 .modal-overlay.active,
 .drawer-overlay.active {
-  display: flex;
+  display: flex !important;
 }
 
 .modal-content {
