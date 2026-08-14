@@ -58,10 +58,7 @@ async function loadStateFromStorage() {
       const orders = await res.json();
       state.orders = orders;
     }
-  } catch (e) {
-    const savedOrders = localStorage.getItem('bcmarmitas_orders');
-    if (savedOrders) state.orders = JSON.parse(savedOrders);
-  }
+  } catch (e) {}
 
   try {
     const resP = await fetch('/api/proteins');
@@ -71,7 +68,35 @@ async function loadStateFromStorage() {
     }
   } catch(e) {}
 
+  try {
+    const resD = await fetch('/api/drinks');
+    if (resD.ok) {
+      const drks = await resD.json();
+      state.drinks = drks.map(d => ({ ...d, icon: d.icon || '🥤' }));
+      renderDrinksCatalog();
+    }
+  } catch(e) {}
+
+  try {
+    const resPr = await fetch('/api/menu-prices');
+    if (resPr.ok) {
+      const prs = await resPr.json();
+      updateDynamicCardPrices(prs);
+    }
+  } catch(e) {}
+
   renderUserOrdersTracker();
+}
+
+function updateDynamicCardPrices(prs) {
+  if (!prs) return;
+  const pCard = document.querySelector('.marmita-card[onclick*="pequena"] .marmita-price');
+  const mCard = document.querySelector('.marmita-card[onclick*="media"] .marmita-price');
+  const gCard = document.querySelector('.marmita-card[onclick*="grande"] .marmita-price');
+
+  if (pCard && prs.pequena) pCard.innerText = `R$ ${prs.pequena.toFixed(2).replace('.', ',')}`;
+  if (mCard && prs.media) mCard.innerText = `R$ ${prs.media.toFixed(2).replace('.', ',')}`;
+  if (gCard && prs.grande) gCard.innerText = `R$ ${prs.grande.toFixed(2).replace('.', ',')}`;
 }
 
 // DOM Initialization
@@ -156,9 +181,43 @@ function openMarmitaBuilderModal(key, title, basePrice) {
   if (titleEl) titleEl.innerText = `Montar ${title}`;
   if (priceEl) priceEl.innerText = `Valor Base: R$ ${basePrice.toFixed(2).replace('.', ',')}`;
 
-  // Reset drink selection to "sem_bebida"
-  const defaultDrink = document.querySelector('input[name="marmita-drink"][value="sem_bebida"]');
-  if (defaultDrink) defaultDrink.checked = true;
+  // Populate proteins dynamically
+  const protContainer = document.getElementById('protein-options-container');
+  if (protContainer && state.kitchenProteins.length) {
+    protContainer.innerHTML = state.kitchenProteins.map((p, idx) => `
+      <label class="radio-option">
+        <input type="radio" name="marmita-protein" value="${p.name}" ${idx === 0 ? 'checked' : ''} />
+        <div class="radio-content">
+          <strong>${p.name}</strong>
+          <small>${p.desc}</small>
+        </div>
+      </label>
+    `).join('');
+  }
+
+  // Populate drinks dynamically inside builder
+  const drinkContainer = document.getElementById('drink-selection-container');
+  if (drinkContainer) {
+    const noDrinkHtml = `
+      <label class="radio-option">
+        <input type="radio" name="marmita-drink" value="sem_bebida" data-price="0.00" onchange="calcBuilderTotal()" checked />
+        <div class="radio-content">
+          <strong>❌ Sem Bebida</strong>
+          <small>Apenas a marmita caprichada</small>
+        </div>
+      </label>
+    `;
+    const drinksHtml = state.drinks.map(d => `
+      <label class="radio-option">
+        <input type="radio" name="marmita-drink" value="${d.name}" data-price="${d.price}" onchange="calcBuilderTotal()" />
+        <div class="radio-content">
+          <strong>${d.icon || '🥤'} ${d.name} (+ R$ ${d.price.toFixed(2).replace('.', ',')})</strong>
+          <small>Geladinha</small>
+        </div>
+      </label>
+    `).join('');
+    drinkContainer.innerHTML = noDrinkHtml + drinksHtml;
+  }
 
   // Reset notes
   const notesEl = document.getElementById('marmita-notes');
