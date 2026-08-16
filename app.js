@@ -780,44 +780,157 @@ function renderUserOrdersTracker() {
   if (!container) return;
 
   if (state.orders.length === 0) {
-    container.innerHTML = `<p style="text-align: center; color: var(--color-muted);">Você ainda não fez pedidos hoje.</p>`;
+    container.innerHTML = '<p style="text-align: center; color: var(--color-muted);">Você ainda não fez pedidos hoje.</p>';
     return;
   }
 
-  container.innerHTML = state.orders.map(o => `
-    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h4 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-dark);">BC MARMITAS</h4>
-        <strong style="color: var(--color-red);">${o.id}</strong>
-      </div>
-      <p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">${o.items}</p>
-      <small style="display: block; color: var(--color-dark); font-weight: 700; margin-bottom: 0.5rem;">📍 ${o.address}</small>
-      
-      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; padding: 0.5rem 0; border-top: 1px dashed var(--border-color);">
-        <span>Total: R$ ${o.total.toFixed(2).replace('.', ',')}</span>
-        <span class="text-success">${o.paymentMethod}</span>
+  container.innerHTML = state.orders.map(o => {
+    const priceNum = parseFloat(o.total) || 0;
+    return '<div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">' +
+      '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">' +
+        '<h4 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--color-dark);">BC MARMITAS</h4>' +
+        '<strong style="color: var(--color-red);">' + o.id + '</strong>' +
+      '</div>' +
+      '<p style="font-size: 0.8rem; color: var(--color-muted); margin-bottom: 0.75rem;">' + o.items + '</p>' +
+      '<small style="display: block; color: var(--color-dark); font-weight: 700; margin-bottom: 0.5rem;">📍 ' + o.address + '</small>' +
+      '<div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; padding: 0.5rem 0; border-top: 1px dashed var(--border-color);">' +
+        '<span>Total: R$ ' + priceNum.toFixed(2).replace('.', ',') + '</span>' +
+        '<span class="text-success">' + o.paymentMethod + '</span>' +
+      '</div>' +
+      '<div style="margin-top: 0.75rem; background: #ffffff; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">' +
+        '<strong style="font-size: 0.78rem; color: var(--color-muted); display: block; margin-bottom: 0.5rem;">RASTREAMENTO DO PEDIDO EM BC:</strong>' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 800; position: relative;">' +
+          '<div style="text-align: center; color: ' + (o.status === 'EM_PREPARO' ? 'var(--color-red)' : '#64748b') + ';">' +
+            '<i class="fa-solid fa-kitchen-set" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>' +
+            '<span>🍳 No Fogão</span>' +
+          '</div>' +
+          '<div style="text-align: center; color: ' + (o.status === 'SAIU_ENTREGA' ? 'var(--color-red)' : '#64748b') + ';">' +
+            '<i class="fa-solid fa-motorcycle" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>' +
+            '<span>🛵 A Caminho</span>' +
+          '</div>' +
+          '<div style="text-align: center; color: ' + (o.status === 'ENTREGUE' ? 'var(--color-emerald)' : '#64748b') + ';">' +
+            '<i class="fa-solid fa-circle-check" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>' +
+            '<span>🎉 Entregue</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top: 0.75rem; display: flex; justify-content: flex-end;">' +
+        '<button class="btn btn-primary btn-sm" onclick="openOrderReceiptModal(\'' + o.id + '\')">' +
+          '<i class="fa-solid fa-receipt"></i> Ver Cupom / Comprovante' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// --- CUPOM / COMPROVANTE DIGITAL ---
+let activeReceiptOrder = null;
+
+function openOrderReceiptModal(orderId) {
+  const order = state.orders.find(o => o.id === orderId);
+  if (!order) return;
+
+  activeReceiptOrder = order;
+
+  const container = document.getElementById('receipt-modal-body');
+  if (!container) return;
+
+  const priceNum = parseFloat(order.total) || 0;
+
+  container.innerHTML = `
+    <div id="printable-receipt-content" style="background: #ffffff; border: 1px dashed #cbd5e1; padding: 1.25rem; border-radius: var(--radius-sm); font-family: 'Courier New', Courier, monospace; color: #0f172a;">
+      <div style="text-align: center; border-bottom: 2px dashed #94a3b8; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 900; margin-bottom: 2px;">🍱 BC MARMITAS - COMIDA CASEIRA</h3>
+        <p style="font-size: 0.75rem;">Marmitas Quentinhas e Deliciosas</p>
+        <p style="font-size: 0.7rem;">Balneário Camboriú - SC • Tel/WA: (47) 99999-9999</p>
       </div>
 
-      <div style="margin-top: 0.75rem; background: #ffffff; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-        <strong style="font-size: 0.78rem; color: var(--color-muted); display: block; margin-bottom: 0.5rem;">RASTREAMENTO DO PEDIDO EM BC:</strong>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 800; position: relative;">
-          <div style="text-align: center; color: ${o.status === 'EM_PREPARO' ? 'var(--color-red)' : '#64748b'};">
-            <i class="fa-solid fa-kitchen-set" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
-            <span>🍳 No Fogão</span>
-          </div>
-          <div style="text-align: center; color: ${o.status === 'SAIU_ENTREGA' ? 'var(--color-red)' : '#64748b'};">
-            <i class="fa-solid fa-motorcycle" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
-            <span>🛵 A Caminho</span>
-          </div>
-          <div style="text-align: center; color: ${o.status === 'ENTREGUE' ? 'var(--color-emerald)' : '#64748b'};">
-            <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; display: block; margin-bottom: 2px;"></i>
-            <span>🎉 Entregue</span>
-          </div>
-        </div>
+      <div style="font-size: 0.78rem; border-bottom: 1px dashed #cbd5e1; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+        <div><strong>PEDIDO Nº:</strong> <span style="font-weight: 900; color: #dc2626;">${order.id}</span></div>
+        <div><strong>DATA/HORA:</strong> ${order.date || 'Hoje'}</div>
+        <div><strong>CLIENTE:</strong> ${order.clientName || 'Cliente'}</div>
+        <div><strong>TELEFONE:</strong> ${order.clientPhone || 'Não informado'}</div>
+        <div><strong>ENDEREÇO:</strong> ${order.address}</div>
+      </div>
+
+      <div style="font-size: 0.78rem; border-bottom: 1px dashed #cbd5e1; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+        <div style="font-weight: 800; margin-bottom: 4px;">ITENS DO PEDIDO:</div>
+        <p style="white-space: pre-wrap; font-size: 0.75rem; line-height: 1.4;">${order.items}</p>
+      </div>
+
+      <div style="font-size: 0.82rem; font-weight: 800; display: flex; justify-content: space-between; border-bottom: 2px dashed #94a3b8; padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+        <span>FORMA PAGO: ${order.paymentMethod || 'PIX / Cartão'}</span>
+        <span style="font-size: 1rem; color: #dc2626;">TOTAL: R$ ${priceNum.toFixed(2).replace('.', ',')}</span>
+      </div>
+
+      <div style="text-align: center; font-size: 0.7rem; color: #64748b;">
+        <p>Agradecemos a sua preferência!</p>
+        <p>Bom apetite! 🍱❤️</p>
       </div>
     </div>
-  `).join('');
+  `;
+
+  const modal = document.getElementById('modal-receipt');
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
+}
+
+function closeReceiptModal() {
+  const modal = document.getElementById('modal-receipt');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
+function sendReceiptWhatsApp() {
+  if (!activeReceiptOrder) return;
+  const o = activeReceiptOrder;
+  const priceNum = parseFloat(o.total) || 0;
+
+  const msg = `*🍱 COMPROVANTE BC MARMITAS*%0A` +
+    `*Pedido:* ${o.id}%0A` +
+    `*Data:* ${o.date || 'Hoje'}%0A` +
+    `*Cliente:* ${o.clientName}%0A` +
+    `*Endereço:* ${o.address}%0A%0A` +
+    `*Itens:* ${o.items}%0A%0A` +
+    `*Pagamento:* ${o.paymentMethod}%0A` +
+    `*TOTAL:* R$ ${priceNum.toFixed(2).replace('.', ',')}%0A%0A` +
+    `_Obrigado pela preferência! Bom apetite! 🍱❤️_`;
+
+  const phone = o.clientPhone ? o.clientPhone.replace(/\D/g, '') : '5547999999999';
+  window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
+}
+
+function printOrderReceipt() {
+  const content = document.getElementById('printable-receipt-content');
+  if (!content) return;
+
+  const printWin = window.open('', '', 'width=400,height=600');
+  printWin.document.write(`
+    <html>
+      <head>
+        <title>Cupom - ${activeReceiptOrder ? activeReceiptOrder.id : 'Pedido'}</title>
+        <style>
+          body { font-family: monospace; padding: 10px; margin: 0; }
+          @media print {
+            @page { margin: 0; size: auto; }
+          }
+        </style>
+      </head>
+      <body>
+        ${content.innerHTML}
+      </body>
+    </html>
+  `);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => {
+    printWin.print();
+    printWin.close();
+  }, 250);
 }
 
 // --- PROGRAMA DE FIDELIDADE (JS) ---
