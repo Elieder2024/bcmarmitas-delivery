@@ -53,6 +53,14 @@ function saveStateToStorage() {
 
 async function loadStateFromStorage() {
   try {
+    const resH = await fetch('/api/store-hours');
+    if (resH.ok) {
+      state.storeHours = await resH.json();
+      updateStoreHeaderStatusUI();
+    }
+  } catch(e) {}
+
+  try {
     const res = await fetch('/api/orders');
     if (res.ok) {
       const orders = await res.json();
@@ -477,6 +485,8 @@ function toggleCartDrawer() {
 
 // Checkout & Proceed to Payment
 function proceedToCheckoutPayment() {
+  if (!checkStoreOpenOrShowModal()) return;
+
   if (state.cart.length === 0) {
     showToast('Seu pedido está vazio! Escolha sua marmita ou bebida primeiro.', 'warning');
     return;
@@ -1185,4 +1195,79 @@ function showToast(msg, type = 'info') {
   setTimeout(() => {
     toast.remove();
   }, 3500);
+}
+
+function isStoreCurrentlyOpen(storeHours) {
+  if (!storeHours) return true;
+
+  if (storeHours.manualStatus === 'open') return true;
+  if (storeHours.manualStatus === 'closed') return false;
+
+  const now = new Date();
+  const currentDay = now.getDay();
+  
+  if (storeHours.daysOpen && Array.isArray(storeHours.daysOpen)) {
+    const daysAsInts = storeHours.daysOpen.map(Number);
+    if (!daysAsInts.includes(currentDay)) {
+      return false;
+    }
+  }
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const [openH, openM] = (storeHours.openTime || '11:00').split(':').map(Number);
+  const [closeH, closeM] = (storeHours.closeTime || '23:00').split(':').map(Number);
+
+  const openMinutes = openH * 60 + openM;
+  let closeMinutes = closeH * 60 + closeM;
+
+  if (closeMinutes < openMinutes) {
+    closeMinutes += 24 * 60;
+    if (currentMinutes < openMinutes) {
+      const adjustedCurrent = currentMinutes + 24 * 60;
+      return adjustedCurrent >= openMinutes && adjustedCurrent < closeMinutes;
+    }
+  }
+
+  return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+}
+
+function updateStoreHeaderStatusUI() {
+  const displayEl = document.getElementById('delivery-address-display');
+  if (!displayEl) return;
+
+  const isOpen = isStoreCurrentlyOpen(state.storeHours);
+  const openTime = state.storeHours?.openTime || '11:00';
+  const closeTime = state.storeHours?.closeTime || '23:00';
+
+  if (isOpen) {
+    displayEl.innerHTML = `<span style="color: #16a34a; font-weight: 800;"><i class="fa-solid fa-circle-check"></i> ABERTO AGORA</span> • Entregas em BC (${openTime} - ${closeTime})`;
+  } else {
+    displayEl.innerHTML = `<span style="color: #dc2626; font-weight: 800;"><i class="fa-solid fa-circle-xmark"></i> FECHADO NO MOMENTO</span> • Cardápio para Consulta (${openTime} - ${closeTime})`;
+  }
+}
+
+function checkStoreOpenOrShowModal() {
+  const isOpen = isStoreCurrentlyOpen(state.storeHours);
+  if (!isOpen) {
+    const titleEl = document.getElementById('store-closed-modal-title');
+    const msgEl = document.getElementById('store-closed-modal-msg');
+    
+    const openTime = state.storeHours?.openTime || '11:00';
+    const closeTime = state.storeHours?.closeTime || '23:00';
+    const customMsg = state.storeHours?.closedMessage || `🔴 Restaurante Fechado no Momento! Nosso horário de funcionamento é das ${openTime} às ${closeTime}. Fique à vontade para olhar nosso cardápio!`;
+
+    if (titleEl) titleEl.innerText = 'Estamos Fechados!';
+    if (msgEl) msgEl.innerText = customMsg;
+
+    const modal = document.getElementById('modal-store-closed');
+    if (modal) modal.classList.add('active');
+    return false;
+  }
+  return true;
+}
+
+function closeStoreClosedModal() {
+  const modal = document.getElementById('modal-store-closed');
+  if (modal) modal.classList.remove('active');
 }
